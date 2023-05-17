@@ -7,6 +7,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "./Item/Weapon.h"
+#include "Animation/AnimMontage.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -58,6 +60,8 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyCharacter::Look);
+		EnhancedInputComponent->BindAction(EKeyPressAction, ETriggerEvent::Triggered, this, &AMyCharacter::EKeyPress);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AMyCharacter::Attack);
 
 	}
 }
@@ -65,7 +69,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	if (Controller)
+	if (Controller && CharacterAnimaionState == ECharacterAnimationState::EAS_None)
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -89,3 +93,31 @@ void AMyCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void AMyCharacter::EKeyPress()
+{
+	AWeapon* Weapon = Cast<AWeapon>(MyItem);
+	if (Weapon)
+	{
+		Weapon->ItemEquip(GetMesh());
+	}
+}
+
+void AMyCharacter::Attack()
+{
+	CharacterAnimaionState = ECharacterAnimationState::EAS_Attacking;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AttackMontage && AnimInstance && MontageSection.Num() > 0)
+	{
+		const int32 Index = MontageSection.Num() - 1;
+		const int32 Section = FMath::RandRange(0, Index);
+		AnimInstance->Montage_Play(AttackMontage);
+		AnimInstance->Montage_JumpToSection(MontageSection[Section], AttackMontage);
+	}
+}
+
+void AMyCharacter::AttackEnd()
+{
+	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
+}
+

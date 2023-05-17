@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
 #include "InputActionValue.h"
+#include "CharacterTypes.h"
 #include "MyCharacter.generated.h"
+
 
 /**
  * 
@@ -45,10 +47,36 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	class UInputAction* LookAction;
 
+	/** 장착 입력 액션 */
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputAction* EKeyPressAction;
+
+	/** 공격 입력 액션 */
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputAction* AttackAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UAnimMontage* AttackMontage;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void EKeyPress();
+	void Attack();
+	
+	UPROPERTY(VisibleAnywhere,Category="Item")
+	class AItem* MyItem;
+
+	UPROPERTY(EditAnywhere,Category = "Montage")
+	TArray<FName> MontageSection;
+
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
 
 private:
-
+	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+	ECharacterAnimationState CharacterAnimaionState = ECharacterAnimationState::EAS_None;
+public:
+	void SetItme(AItem* Item) { MyItem = Item; }
 };
 
