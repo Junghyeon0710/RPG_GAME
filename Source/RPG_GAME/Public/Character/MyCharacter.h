@@ -66,11 +66,18 @@ protected:
 	UPROPERTY(VisibleAnywhere,Category="Item")
 	class AItem* MyItem;
 
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+	class AWeapon* Weapon;
+
 	UPROPERTY(EditAnywhere,Category = "Montage")
 	TArray<FName> MontageSection;
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
+
+	UFUNCTION(BlueprintCallable)
+	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
+
 
 
 private:
@@ -78,5 +85,9 @@ private:
 	ECharacterAnimationState CharacterAnimaionState = ECharacterAnimationState::EAS_None;
 public:
 	void SetItme(AItem* Item) { MyItem = Item; }
+	FORCEINLINE ECharacterState GetCharacterState() const{
+		return CharacterState
+			;
+	}
 };
 

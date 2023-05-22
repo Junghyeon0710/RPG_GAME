@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "./Item/Weapon.h"
 #include "Animation/AnimMontage.h"
+#include <Components/BoxComponent.h>
+
 
 AMyCharacter::AMyCharacter()
 {
@@ -96,19 +98,22 @@ void AMyCharacter::Look(const FInputActionValue& Value)
 
 void AMyCharacter::EKeyPress()
 {
-	AWeapon* Weapon = Cast<AWeapon>(MyItem);
-	if (Weapon)
+	AWeapon* MyWeapon = Cast<AWeapon>(MyItem);
+	if (MyWeapon)
 	{
-		Weapon->ItemEquip(GetMesh());
+		MyWeapon->ItemEquip(GetMesh(),this,this);
+		CharacterState = ECharacterState::ECS_EquipOneHand;
+
+		Weapon = MyWeapon;
 	}
 }
 
 void AMyCharacter::Attack()
 {
-	CharacterAnimaionState = ECharacterAnimationState::EAS_Attacking;
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AttackMontage && AnimInstance && MontageSection.Num() > 0)
+	if (AttackMontage && AnimInstance && MontageSection.Num() > 0 && CharacterState == ECharacterState::ECS_EquipOneHand)
 	{
+		CharacterAnimaionState = ECharacterAnimationState::EAS_Attacking;
 		const int32 Index = MontageSection.Num() - 1;
 		const int32 Section = FMath::RandRange(0, Index);
 		AnimInstance->Montage_Play(AttackMontage);
@@ -119,5 +124,14 @@ void AMyCharacter::Attack()
 void AMyCharacter::AttackEnd()
 {
 	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
+
 }
 
+void AMyCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
+{
+	if (Weapon && Weapon->GetBox())
+	{
+		Weapon->GetBox()->SetCollisionEnabled(CollisionEnabled);
+		Weapon->IgnoreActor.Empty(); // 충돌배우를 다시 비워줌
+	}
+}

@@ -4,7 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include <../Public/Character/CharacterTypes.h>
 #include "Item.generated.h"
+
+
+enum class EItemState : uint8
+{
+	EIS_Hovering,
+	EIS_Equipped
+};
 
 UCLASS()
 class RPG_GAME_API AItem : public AActor
@@ -30,6 +38,8 @@ protected:
 	//스페어 콜리저에서 떨어질시
 	UFUNCTION()
 	virtual void SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	EItemState ItemState = EItemState::EIS_Hovering;
 private:
 
 	UPROPERTY(EditAnywhere,Category = "사인")
@@ -42,6 +52,5 @@ private:
 	float RunningTime; //시간
 
 	float MySin(); // 사인구하기
-
 
 };

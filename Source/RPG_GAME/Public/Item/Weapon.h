@@ -17,16 +17,31 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 
-	void ItemEquip(USceneComponent* Parent);
+	void ItemEquip(USceneComponent* Parent,AActor* NewOwner , APawn* NewInstigator);
+
+	TArray<AActor*> IgnoreActor;
 protected:
 	virtual void BeginPlay() override;
-	//스페어에 닳을시
-	virtual void SphereBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
 
-	//스페어 콜리저에서 떨어질시
-	virtual void SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)override;
+	UFUNCTION()
+	virtual void BoxBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* Box;
 
+	UPROPERTY(VisibleAnywhere)
+	class USceneComponent* Start;
+
+	UPROPERTY(VisibleAnywhere)
+	class USceneComponent* End;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFields(const FVector& FieldLocation);
+ 
 private:
+
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+public:
+	FORCEINLINE UBoxComponent* GetBox() const { return Box; }
 };

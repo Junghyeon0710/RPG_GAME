@@ -5,23 +5,31 @@
 #include <Components/SphereComponent.h>
 #include <Components/StaticMeshComponent.h>
 #include <./Character/MyCharacter.h>
+
 // Sets default values
 AItem::AItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
-	RootComponent = Sphere;
-
+	
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(Sphere);
+	RootComponent = Mesh;
+
+	
+	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
+	Sphere->SetupAttachment(RootComponent);
+
+	
 }
 
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	RunningTime += DeltaTime;
-	AddActorWorldOffset(FVector(0.f, 0.f, MySin()));
+	if (ItemState != EItemState::EIS_Equipped)
+	{
+		RunningTime += DeltaTime;
+		AddActorWorldOffset(FVector(0.f, 0.f, MySin()));
+	}
 }
 
 void AItem::BeginPlay()
@@ -54,9 +62,6 @@ void AItem::SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 		MyCharacter->SetItme(nullptr);
 	}
 }
-
-
-
 
 float AItem::MySin()
 {
