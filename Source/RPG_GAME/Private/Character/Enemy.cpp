@@ -10,7 +10,9 @@
 #include <Kismet/GameplayStatics.h>
 #include "Components/AttribtueComponent.h"
 #include "Components/WidgetComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include <Components/HealthBarComponent.h>
+#include "AIController.h"
 
 
 AEnemy::AEnemy()
@@ -25,11 +27,56 @@ AEnemy::AEnemy()
 	
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationRoll = false;
 }
 
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (CombatTarget)
+	{
+		if(!InTargetRange(CombatTarget, CombatRadius))
+		{
+			CombatTarget = nullptr;
+			if (HealthBarWidget)
+			{
+				HealthBarWidget->SetVisibility(false);
+			}
+		}
+	}
+	if (PatrolTarget && EnemyController)
+	{
+		if (InTargetRange(PatrolTarget, PatrolRadius))
+		{
+
+			TArray<AActor*> ValidTargets;
+			for (AActor* Target: PatrolTargets)
+			{
+				if (Target != PatrolTarget)
+				{
+					ValidTargets.AddUnique(Target);
+				}
+			}
+			const int32 NumPatrolTargets = ValidTargets.Num() - 1;
+			if (NumPatrolTargets > 0)
+			{
+				const int32 TargetSection = FMath::RandRange(0, NumPatrolTargets);
+				AActor* Target = ValidTargets[TargetSection];
+				PatrolTarget = Target;
+				FAIMoveRequest MoveRequest;
+				MoveRequest.SetGoalActor(PatrolTarget);
+				MoveRequest.SetAcceptanceRadius(15.f);
+				EnemyController->MoveTo(MoveRequest);
+			}
+		
+		}
+	}
+	
 }
 
 
@@ -37,31 +84,71 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*if (HealthBarWidget && Attributes)
+	if (HealthBarWidget && Attributes)
 	{
-		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());
-	}*/
+		HealthBarWidget->SetVisibility(false);
+	}
+	EnemyController = Cast<AAIController>(GetController());
+	if (EnemyController)
+	{
+		FAIMoveRequest MoveRequest;
+		MoveRequest.SetGoalActor(PatrolTarget);
+		MoveRequest.SetAcceptanceRadius(15.f);
+		EnemyController->MoveTo(MoveRequest);
+	}
 }
 
-void AEnemy::PlayMontage(const FName Section)
+void AEnemy::PlayMontage(const FName Section, UAnimMontage* Montage)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (HitMontage)
+	if (Montage)
 	{
-		AnimInstance->Montage_Play(HitMontage);
-		AnimInstance->Montage_JumpToSection(Section, HitMontage);
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(Section, Montage);
 	}
+}
 
+FName AEnemy::DeathMontageSection()
+{ 
+	const int32 Section = FMath::RandRange(0, 1);
+	FName SectionName;
+
+	switch(Section)
+	{
+	case 0:
+		SectionName = FName("Death1");
+		DeathPose = EDeathPose::EDP_Death1;
+		break;
+	case 1:
+		SectionName = FName("Death2");
+		DeathPose = EDeathPose::EDP_Death2;
+		break;
+	default:
+			break;
+	}
+	return SectionName;
+}
+
+bool AEnemy::InTargetRange(AActor* Target, double Radius)
+{
+	//타겟거리
+	double DistanceToTarget = FVector::Dist(Target->GetActorLocation(), GetActorLocation());
+	
+	//사정거리 안에 오면 참
+	return DistanceToTarget<=Radius;
 }
 
 void AEnemy::GetHit(const FVector& ImpactPoint)
 {
-	UE_LOG(LogTemp, Display, TEXT("1234"));
-	DrawDebugSphere(GetWorld(), ImpactPoint, 25.f, 12.f, FColor::Blue, false, 5.f);
+	if (Attributes && Attributes->IsAlive())
+		DirectionalHitReact(ImpactPoint);
+	else
+	{
+		PlayMontage(DeathMontageSection(), DeathMontage);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SetLifeSpan(5.f);
+	}
 	
-
-	DirectionalHitReact(ImpactPoint);
-
 	if (HitParticle)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
@@ -72,9 +159,12 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 {
 	if (Attributes && HealthBarWidget)
 	{
+		HealthBarWidget->SetVisibility(1);
 		Attributes->ReceiveDamage(DamageAmount);
 		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());	
 	}
+
+	CombatTarget = EventInstigator->GetPawn();
 	return DamageAmount;
 }
 void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
@@ -113,5 +203,5 @@ void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
 	{
 		Section = FName("Right");
 	}
-	PlayMontage(Section);
+	PlayMontage(Section,HitMontage);
 }

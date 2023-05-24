@@ -14,3 +14,12 @@ enum class ECharacterAnimationState : uint8
 	EAS_Attacking UMETA(DisplayName = "Attack")
 
 };
+
+UENUM(BlueprintType)
+enum class EDeathPose : uint8
+{
+	EDP_Alive UMETA(DisplayName = "Alive"),
+	EDP_Death1 UMETA(DisplayName = "Death1"),
+	EDP_Death2 UMETA(DisplayName = "Death2")
+
+};

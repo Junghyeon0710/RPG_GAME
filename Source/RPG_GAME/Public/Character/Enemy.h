@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
 #include "../Interface/MyInterface.h"
+#include "CharacterTypes.h"
 #include "Enemy.generated.h"
 
 /**
@@ -27,12 +28,21 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category=Montage)
 	class UAnimMontage* HitMontage;
+
+	UPROPERTY(EditAnywhere, Category = Montage)
+	class UAnimMontage* DeathMontage;
 	void DirectionalHitReact(const FVector& ImpactPoint);
 
-	void PlayMontage(const FName Section);
+	void PlayMontage(const FName Section, UAnimMontage* Montage);
+	bool InTargetRange(AActor* Target, double Radius);
+
+	FName DeathMontageSection();
 
 	UPROPERTY(EditAnywhere, Category = "파티클")
 	class UParticleSystem* HitParticle;
+
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 private:
 
 	UPROPERTY(VisibleAnywhere)
@@ -40,4 +50,23 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	class UHealthBarComponent* HealthBarWidget;
+
+	UPROPERTY()
+	AActor* CombatTarget;
+
+	UPROPERTY(EditAnywhere, Category = "반경")
+	float CombatRadius = 500.f;
+
+	/** Navigation*/
+
+	class AAIController* EnemyController;
+	// 시작 순찰 위치
+	UPROPERTY(EditInstanceOnly,Category = "Ai Navigation")
+	AActor* PatrolTarget;
+
+	UPROPERTY(EditInstanceOnly, Category = "Ai Navigation")
+	TArray<AActor*> PatrolTargets;
+
+	UPROPERTY(EditAnywhere, Category = "반경")
+	float PatrolRadius = 200.f;
 };

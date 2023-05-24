@@ -79,6 +79,14 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 	if (BoxHit.GetActor())
 	{
+		UGameplayStatics::ApplyDamage(
+			BoxHit.GetActor(),
+			Damage,
+			GetInstigator()->GetController(),
+			this,
+			UDamageType::StaticClass()
+		);
+
 		IMyInterface* HitInterface = Cast<IMyInterface>(BoxHit.GetActor());
 		if (HitInterface)
 		{
@@ -87,15 +95,9 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		IgnoreActor.AddUnique(BoxHit.GetActor()); //맞은 배우를 배열에 저장해줌
 		// 캐릭터에 클래스에 가서 배열을 다시 비워줘야 계속 타격 가능
 		
-		CreateFields(BoxHit.ImpactPoint);
+		CreateFields(BoxHit.ImpactPoint); //필드생성 액터 부시기
 
-		UGameplayStatics::ApplyDamage(
-			BoxHit.GetActor(),
-			Damage,
-			GetInstigator()->GetController(),
-			this,
-			UDamageType::StaticClass()
-		);
+		
 	}
 
 }
