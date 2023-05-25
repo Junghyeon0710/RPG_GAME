@@ -44,6 +44,7 @@ void AMyCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+	Tags.Add(FName("MyCharacter"));
 
 }
 
@@ -111,6 +112,11 @@ void AMyCharacter::EKeyPress()
 
 void AMyCharacter::Attack()
 {
+	PlayAttackMontage();
+}
+
+void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , FName Section)
+{
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AttackMontage && AnimInstance && MontageSection.Num() > 0 && CharacterState == ECharacterState::ECS_EquipOneHand)
 	{
@@ -130,9 +136,5 @@ void AMyCharacter::AttackEnd()
 
 void AMyCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
 {
-	if (Weapon && Weapon->GetBox())
-	{
-		Weapon->GetBox()->SetCollisionEnabled(CollisionEnabled);
-		Weapon->IgnoreActor.Empty(); // 충돌배우를 다시 비워줌
-	}
+
 }

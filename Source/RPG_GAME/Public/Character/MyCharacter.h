@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
 #include "InputActionValue.h"
-#include "CharacterTypes.h"
 #include "MyCharacter.generated.h"
 
 
@@ -62,12 +61,12 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void EKeyPress();
 	void Attack();
+	void PlayAttackMontage();
 	
 	UPROPERTY(VisibleAnywhere,Category="Item")
 	class AItem* MyItem;
 
-	UPROPERTY(VisibleAnywhere, Category = "Item")
-	class AWeapon* Weapon;
+	
 
 	UPROPERTY(EditAnywhere,Category = "Montage")
 	TArray<FName> MontageSection;
@@ -86,8 +85,7 @@ private:
 public:
 	void SetItme(AItem* Item) { MyItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const{
-		return CharacterState
-			;
+		return CharacterState;
 	}
 };
 

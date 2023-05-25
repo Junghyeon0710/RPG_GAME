@@ -35,6 +35,13 @@ protected:
 
 	void PlayMontage(const FName Section, UAnimMontage* Montage);
 	bool InTargetRange(AActor* Target, double Radius);
+	void MoveToTaget(AActor* Target);
+	AActor* ChoosePatrolTarget();
+	void CheckCombatTarget();
+	void CheckPatrolTarget();
+
+	UFUNCTION()
+	void PawnSeen(APawn* SeenPawn);
 
 	FName DeathMontageSection();
 
@@ -57,11 +64,14 @@ private:
 	UPROPERTY(EditAnywhere, Category = "반경")
 	float CombatRadius = 500.f;
 
+	UPROPERTY(EditAnywhere, Category = "반경")
+	float AttackRadius = 150.f;
+
 	/** Navigation*/
 
 	class AAIController* EnemyController;
 	// 시작 순찰 위치
-	UPROPERTY(EditInstanceOnly,Category = "Ai Navigation")
+	UPROPERTY(EditInstanceOnly,Category = "Ai Navigation",BlueprintReadWrite,meta = (AllowPrivateAccess = "true"))
 	AActor* PatrolTarget;
 
 	UPROPERTY(EditInstanceOnly, Category = "Ai Navigation")
@@ -69,4 +79,19 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "반경")
 	float PatrolRadius = 200.f;
+
+	FTimerHandle PatrolTimer;
+	void patrolTimerFinished();
+
+	UPROPERTY(EditAnywhere, Category = "Ai Navigation")
+	float WaitMin = 5.f;
+
+	UPROPERTY(EditAnywhere, Category = "Ai Navigation")
+	float WaitMax = 10.f;
+
+	//Component
+	UPROPERTY(VisibleAnywhere)
+	class UPawnSensingComponent* PawnSensing;
+
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 };

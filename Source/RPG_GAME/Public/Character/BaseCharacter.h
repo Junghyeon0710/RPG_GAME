@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CharacterTypes.h"
 #include "BaseCharacter.generated.h"
 
 UCLASS()
@@ -12,18 +13,17 @@ class RPG_GAME_API ABaseCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABaseCharacter();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UFUNCTION(BlueprintCallable)
+	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
 
+protected:
+
+	virtual void BeginPlay() override;
+	virtual void PlayAttackMontage();
+
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+		class AWeapon* Weapon;
 };
