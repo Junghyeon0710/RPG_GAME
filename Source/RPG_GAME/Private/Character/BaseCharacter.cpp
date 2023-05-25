@@ -18,6 +18,11 @@ void ABaseCharacter::BeginPlay()
 	
 }
 
+void ABaseCharacter::PlayAttackMontage(UAnimMontage* Montage, FName Section)
+{
+
+}
+
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

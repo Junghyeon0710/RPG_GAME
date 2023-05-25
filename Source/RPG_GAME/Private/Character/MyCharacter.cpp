@@ -112,7 +112,7 @@ void AMyCharacter::EKeyPress()
 
 void AMyCharacter::Attack()
 {
-	PlayAttackMontage();
+	PlayAttackMontage(AttackMontage,FName("Attack1"));
 	
 }
 
@@ -125,7 +125,7 @@ void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , FName Section)
 		const int32 Index = MontageSection.Num() - 1;
 		const int32 SectionName = FMath::RandRange(0, Index);
 		AnimInstance->Montage_Play(Montage);
-		AnimInstance->Montage_JumpToSection(MontageSection[Section], Montage);
+		AnimInstance->Montage_JumpToSection(Section, Montage);
 	}
 }
 

@@ -18,13 +18,15 @@ public:
 	ABaseCharacter();
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
+	
 
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void PlayAttackMontage(UAnimMontage* Montage, FName Section);
+
+	UFUNCTION(BlueprintCallable)
+	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	class AWeapon* Weapon;
