@@ -74,8 +74,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 
-	UFUNCTION(BlueprintCallable)
-	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
+	//UFUNCTION(BlueprintCallable)
+	//void SetCollision(ECollisionEnabled::Type CollisionEnabled);
 
 
 
