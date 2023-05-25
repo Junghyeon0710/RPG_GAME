@@ -61,7 +61,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void EKeyPress();
 	void Attack();
-	void PlayAttackMontage();
+	virtual void PlayAttackMontage(UAnimMontage* Montage, FName Section) override;
 	
 	UPROPERTY(VisibleAnywhere,Category="Item")
 	class AItem* MyItem;

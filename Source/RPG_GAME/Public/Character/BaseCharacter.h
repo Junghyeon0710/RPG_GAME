@@ -7,6 +7,8 @@
 #include "CharacterTypes.h"
 #include "BaseCharacter.generated.h"
 
+
+
 UCLASS()
 class RPG_GAME_API ABaseCharacter : public ACharacter
 {
@@ -22,8 +24,8 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-	virtual void PlayAttackMontage();
+	virtual void PlayAttackMontage(UAnimMontage* Montage, FName Section);
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-		class AWeapon* Weapon;
+	class AWeapon* Weapon;
 };

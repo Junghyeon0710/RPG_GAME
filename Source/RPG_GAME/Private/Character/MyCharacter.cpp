@@ -113,18 +113,19 @@ void AMyCharacter::EKeyPress()
 void AMyCharacter::Attack()
 {
 	PlayAttackMontage();
+	
 }
 
 void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , FName Section)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AttackMontage && AnimInstance && MontageSection.Num() > 0 && CharacterState == ECharacterState::ECS_EquipOneHand)
+	if (Montage && AnimInstance && MontageSection.Num() > 0 && CharacterState == ECharacterState::ECS_EquipOneHand)
 	{
 		CharacterAnimaionState = ECharacterAnimationState::EAS_Attacking;
 		const int32 Index = MontageSection.Num() - 1;
-		const int32 Section = FMath::RandRange(0, Index);
-		AnimInstance->Montage_Play(AttackMontage);
-		AnimInstance->Montage_JumpToSection(MontageSection[Section], AttackMontage);
+		const int32 SectionName = FMath::RandRange(0, Index);
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(MontageSection[Section], Montage);
 	}
 }
 
@@ -134,7 +135,3 @@ void AMyCharacter::AttackEnd()
 
 }
 
-void AMyCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
-{
-
-}
