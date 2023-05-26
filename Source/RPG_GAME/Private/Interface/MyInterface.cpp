@@ -4,3 +4,7 @@
 #include "Interface/MyInterface.h"
 
 // Add default functionality here for any IMyInterface functions that are not pure virtual.
+
+void IMyInterface::GetHit(const FVector& ImpactPoint)
+{
+}

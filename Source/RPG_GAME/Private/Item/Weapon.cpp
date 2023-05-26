@@ -39,10 +39,10 @@ void AWeapon::BeginPlay()
 	Box->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::BoxBeginOverlap);
 }
 
-void AWeapon::ItemEquip(USceneComponent* Parent, AActor* NewOwner, APawn* NewInstigator)
+void AWeapon::ItemEquip(USceneComponent* Parent, const FName Name,AActor* NewOwner, APawn* NewInstigator)
 {
 	FAttachmentTransformRules TransformRules(EAttachmentRule::SnapToTarget,true);
-	Mesh->AttachToComponent(Parent, TransformRules, FName("RightHandSocket"));
+	Mesh->AttachToComponent(Parent, TransformRules, Name);
 	ItemState = EItemState::EIS_Equipped;
 	SetOwner(NewOwner);
 	SetInstigator(NewInstigator);

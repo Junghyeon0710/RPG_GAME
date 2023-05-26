@@ -17,7 +17,7 @@ public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 
-	void ItemEquip(USceneComponent* Parent,AActor* NewOwner , APawn* NewInstigator);
+	void ItemEquip(USceneComponent* Parent,const FName Name,AActor* NewOwner , APawn* NewInstigator);
 
 	TArray<AActor*> IgnoreActor;
 protected:

@@ -4,15 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
-#include "../Interface/MyInterface.h"
-#include "CharacterTypes.h"
 #include "Enemy.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_GAME_API AEnemy : public ABaseCharacter, public IMyInterface
+class RPG_GAME_API AEnemy : public ABaseCharacter
 {
 	GENERATED_BODY()
 public:
@@ -31,14 +29,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Montage)
 	class UAnimMontage* DeathMontage;
-	void DirectionalHitReact(const FVector& ImpactPoint);
+	
 
-	void PlayMontage(const FName Section, UAnimMontage* Montage);
+	virtual void PlayMontage(const FName Section, UAnimMontage* Montage)override;
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTaget(AActor* Target);
 	AActor* ChoosePatrolTarget();
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
+	//virtual void PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section) override;
 
 	UFUNCTION()
 	void PawnSeen(APawn* SeenPawn);
@@ -94,4 +93,10 @@ private:
 	class UPawnSensingComponent* PawnSensing;
 
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AWeapon> WeaponClass;
+
+
+	
 };

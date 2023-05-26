@@ -70,6 +70,8 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
+
+
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -103,35 +105,29 @@ void AMyCharacter::EKeyPress()
 	AWeapon* MyWeapon = Cast<AWeapon>(MyItem);
 	if (MyWeapon)
 	{
-		MyWeapon->ItemEquip(GetMesh(),this,this);
+		MyWeapon->ItemEquip(GetMesh(),FName("RightHandSocket"), this, this);
 		CharacterState = ECharacterState::ECS_EquipOneHand;
 
-		Weapon = MyWeapon;
+		EquippedWeapon = MyWeapon;
 	}
 }
 
 void AMyCharacter::Attack()
 {
-	PlayAttackMontage(AttackMontage,FName("Attack1"));
-	
-}
-
-void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , FName Section)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (Montage && AnimInstance && MontageSection.Num() > 0 && CharacterState == ECharacterState::ECS_EquipOneHand)
+	if (CharacterState == ECharacterState::ECS_EquipOneHand)
 	{
 		CharacterAnimaionState = ECharacterAnimationState::EAS_Attacking;
-		const int32 Index = MontageSection.Num() - 1;
-		const int32 SectionName = FMath::RandRange(0, Index);
-		AnimInstance->Montage_Play(Montage);
-		AnimInstance->Montage_JumpToSection(Section, Montage);
+		PlayAttackMontage(AttackMontage, MontageSection);
 	}
+}
+
+void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , TArray<FName> Section)
+{
+	Super::PlayAttackMontage(Montage, Section);
 }
 
 void AMyCharacter::AttackEnd()
 {
 	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
-
 }
 

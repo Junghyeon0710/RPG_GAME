@@ -5,29 +5,32 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CharacterTypes.h"
+#include "../Interface/MyInterface.h"
 #include "BaseCharacter.generated.h"
 
 
 
 UCLASS()
-class RPG_GAME_API ABaseCharacter : public ACharacter
+class RPG_GAME_API ABaseCharacter : public ACharacter , public IMyInterface
 {
 	GENERATED_BODY()
 
 public:
 	ABaseCharacter();
-	virtual void Tick(float DeltaTime) override;
-
-	
-
+	void DirectionalHitReact(const FVector& ImpactPoint, UAnimMontage* Montage);
 protected:
 
 	virtual void BeginPlay() override;
-	virtual void PlayAttackMontage(UAnimMontage* Montage, FName Section);
-
+	virtual void PlayAttackMontage(UAnimMontage* Montage,  TArray<FName> Section); //공격 몽타주
+	virtual void PlayMontage(const FName Section, UAnimMontage* Montage);
 	UFUNCTION(BlueprintCallable)
 	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	class AWeapon* Weapon;
+	class AWeapon* EquippedWeapon;
+
+
+
+	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
+	ECharacterAnimationState CharacterAnimaionState = ECharacterAnimationState::EAS_None;
 };

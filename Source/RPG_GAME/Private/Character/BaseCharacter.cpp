@@ -4,13 +4,51 @@
 #include "Character/BaseCharacter.h"
 #include <Item/Weapon.h>
 #include <Components/BoxComponent.h>
+#include "Animation/AnimMontage.h"
 
 ABaseCharacter::ABaseCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
+void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint, UAnimMontage* Montage)
+{
+	const FVector Forward = GetActorForwardVector();
+	// Lower Impact Point to the Enemy's Actor Location Z
+	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
+	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
+
+	// Forward * ToHit = |Forward||ToHit| * cos(theta)
+	// |Forward| = 1, |ToHit| = 1, so Forward * ToHit = cos(theta)
+	const double CosTheta = FVector::DotProduct(Forward, ToHit);
+	// Take the inverse cosine (arc-cosine) of cos(theta) to get theta
+	double Theta = FMath::Acos(CosTheta);
+	// convert from radians to degrees
+	Theta = FMath::RadiansToDegrees(Theta);
+
+	// if CrossProduct points down, Theta should be negative
+	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
+	if (CrossProduct.Z < 0)
+	{
+		Theta *= -1.f;
+	}
+
+	FName Section("Back");
+
+	if (Theta >= -45.f && Theta < 45.f)
+	{
+		Section = FName("Front");
+	}
+	else if (Theta >= -135.f && Theta < -45.f)
+	{
+		Section = FName("Left");
+	}
+	else if (Theta >= 45.f && Theta < 135.f)
+	{
+		Section = FName("Right");
+	}
+	PlayMontage(Section, Montage);
+}
 
 void ABaseCharacter::BeginPlay()
 {
@@ -18,23 +56,36 @@ void ABaseCharacter::BeginPlay()
 	
 }
 
-void ABaseCharacter::PlayAttackMontage(UAnimMontage* Montage, FName Section)
+void ABaseCharacter::PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section)
 {
-
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (Montage && AnimInstance && Section.Num() > 0)
+	{
+		const int32 Index = Section.Num() - 1;
+		const int32 SectionName = FMath::RandRange(0, Index);
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(Section[SectionName], Montage);
+	}
 }
 
-void ABaseCharacter::Tick(float DeltaTime)
+void ABaseCharacter::PlayMontage(const FName Section, UAnimMontage* Montage)
 {
-	Super::Tick(DeltaTime);
-
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (Montage)
+	{
+		AnimInstance->Montage_Play(Montage);
+		AnimInstance->Montage_JumpToSection(Section, Montage);
+	}
 }
 
 void ABaseCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
 {
-	if (Weapon && Weapon->GetBox())
+	if (EquippedWeapon && EquippedWeapon->GetBox())
 	{
-		Weapon->GetBox()->SetCollisionEnabled(CollisionEnabled);
-		Weapon->IgnoreActor.Empty(); // 충돌배우를 다시 비워줌
+		EquippedWeapon->GetBox()->SetCollisionEnabled(CollisionEnabled);
+		EquippedWeapon->IgnoreActor.Empty(); // 충돌배우를 다시 비워줌
 	}
 }
+
+
 

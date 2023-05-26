@@ -14,6 +14,7 @@
 #include <Components/HealthBarComponent.h>
 #include "AIController.h"
 #include "Perception/PawnSensingComponent.h"
+#include "./Item/Weapon.h"
 
 
 AEnemy::AEnemy()
@@ -70,17 +71,15 @@ void AEnemy::BeginPlay()
 		PawnSensing->OnSeePawn.AddDynamic(this, &AEnemy::PawnSeen);
 	}
 
-}
-
-void AEnemy::PlayMontage(const FName Section, UAnimMontage* Montage)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (Montage)
+	UWorld* World = GetWorld();
+	if (World && WeaponClass)
 	{
-		AnimInstance->Montage_Play(Montage);
-		AnimInstance->Montage_JumpToSection(Section, Montage);
+		AWeapon* Weapon = World->SpawnActor<AWeapon>(WeaponClass);
+		Weapon->ItemEquip(GetMesh(),FName("RightHandSocket"), this, this);
+		EquippedWeapon = Weapon;
 	}
 }
+
 
 FName AEnemy::DeathMontageSection()
 { 
@@ -101,6 +100,11 @@ FName AEnemy::DeathMontageSection()
 			break;
 	}
 	return SectionName;
+}
+
+void AEnemy::PlayMontage(const FName Section, UAnimMontage* Montage)
+{
+	Super::PlayMontage(Section, Montage);
 }
 
 bool AEnemy::InTargetRange(AActor* Target, double Radius)
@@ -154,18 +158,22 @@ void AEnemy::CheckCombatTarget()
 			HealthBarWidget->SetVisibility(false);
 		}
 		EnemyState = EEnemyState::EES_Patrolling;
+		UE_LOG(LogTemp, Error, TEXT("EES_Patrolling"));
 		GetCharacterMovement()->MaxWalkSpeed = 225.f;
 		MoveToTaget(PatrolTarget);
 	}
 	else if (!InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
 	{
 		EnemyState = EEnemyState::EES_Chasing;
+		UE_LOG(LogTemp, Error, TEXT("EES_Chasing"));
 		GetCharacterMovement()->MaxWalkSpeed = 555.f;
 		MoveToTaget(CombatTarget);
 	}
 	else if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
 	{
+
 		EnemyState = EEnemyState::EES_Attacking;
+		UE_LOG(LogTemp, Error, TEXT("EES_Attacking"));
 		// Attack Montage
 	}
 }
@@ -192,6 +200,7 @@ void AEnemy::PawnSeen(APawn* SeenPawn)
 		if (EnemyState != EEnemyState::EES_Attacking)
 		{
 			EnemyState = EEnemyState::EES_Chasing;
+			UE_LOG(LogTemp, Error, TEXT("PawnSee"));
 			MoveToTaget(CombatTarget);
 		}
 	}
@@ -205,7 +214,7 @@ void AEnemy::patrolTimerFinished()
 void AEnemy::GetHit(const FVector& ImpactPoint)
 {
 	if (Attributes && Attributes->IsAlive())
-		DirectionalHitReact(ImpactPoint);
+		DirectionalHitReact(ImpactPoint,HitMontage);
 	else
 	{
 		PlayMontage(DeathMontageSection(), DeathMontage);
@@ -229,46 +238,9 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	}
 
 	CombatTarget = EventInstigator->GetPawn();
+	UE_LOG(LogTemp, Error, TEXT("TakeDmage"));
 	EnemyState = EEnemyState::EES_Chasing;
 	GetCharacterMovement()->MaxWalkSpeed = 555.f;
 	MoveToTaget(CombatTarget);
 	return DamageAmount;
-}
-void AEnemy::DirectionalHitReact(const FVector& ImpactPoint)
-{
-	const FVector Forward = GetActorForwardVector();
-	// Lower Impact Point to the Enemy's Actor Location Z
-	const FVector ImpactLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
-	const FVector ToHit = (ImpactLowered - GetActorLocation()).GetSafeNormal();
-
-	// Forward * ToHit = |Forward||ToHit| * cos(theta)
-	// |Forward| = 1, |ToHit| = 1, so Forward * ToHit = cos(theta)
-	const double CosTheta = FVector::DotProduct(Forward, ToHit);
-	// Take the inverse cosine (arc-cosine) of cos(theta) to get theta
-	double Theta = FMath::Acos(CosTheta);
-	// convert from radians to degrees
-	Theta = FMath::RadiansToDegrees(Theta);
-
-	// if CrossProduct points down, Theta should be negative
-	const FVector CrossProduct = FVector::CrossProduct(Forward, ToHit);
-	if (CrossProduct.Z < 0)
-	{
-		Theta *= -1.f;
-	}
-
-	FName Section("Back");
-
-	if (Theta >= -45.f && Theta < 45.f)
-	{
-		Section = FName("Front");
-	}
-	else if (Theta >= -135.f && Theta < -45.f)
-	{
-		Section = FName("Left");
-	}
-	else if (Theta >= 45.f && Theta < 135.f)
-	{
-		Section = FName("Right");
-	}
-	PlayMontage(Section,HitMontage);
 }
