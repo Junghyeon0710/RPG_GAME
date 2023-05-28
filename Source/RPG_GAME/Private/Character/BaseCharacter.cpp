@@ -87,5 +87,9 @@ void ABaseCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
 	}
 }
 
+void ABaseCharacter::AttackEnd()
+{
+}
+
 
 

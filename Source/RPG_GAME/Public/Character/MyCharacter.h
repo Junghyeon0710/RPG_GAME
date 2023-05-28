@@ -21,7 +21,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//virtual void GetHit(const FVector& ImpactPoint) override;
+	virtual void GetHit(const FVector& ImpactPoint) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -56,9 +56,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	class UInputAction* AttackAction;
 
-	/** 공격 몽타주 */
-	UPROPERTY(EditAnywhere, Category = Input)
-	class UAnimMontage* AttackMontage;
 
 	void Move(const FInputActionValue& Value); //캐릭터 움직이
 	void Look(const FInputActionValue& Value); //캐릭터 마우스로 보기
@@ -70,11 +67,8 @@ protected:
 	UPROPERTY(VisibleAnywhere,Category="Item")
 	class AItem* MyItem;
 
-	UPROPERTY(EditAnywhere,Category = "Montage")
-	TArray<FName> MontageSection;
-
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
+	
+	virtual void AttackEnd() override;
 
 private:
 	

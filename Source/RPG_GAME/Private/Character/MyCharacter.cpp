@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include <Kismet/GameplayStatics.h>
+#include <Components/StaticMeshComponent.h>
 #include "GameFramework/CharacterMovementComponent.h"
 #include "./Item/Weapon.h"
 #include "Animation/AnimMontage.h"
@@ -22,6 +24,12 @@ AMyCharacter::AMyCharacter()
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 600.f;
+
+	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
+	GetMesh()->SetGenerateOverlapEvents(true);
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArm->bUsePawnControlRotation = true;
@@ -44,7 +52,7 @@ void AMyCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	Tags.Add(FName("MyCharacter"));
+	Tags.Add(FName("EngagebleTarget"));
 
 }
 
@@ -67,6 +75,15 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(EKeyPressAction, ETriggerEvent::Triggered, this, &AMyCharacter::EKeyPress);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AMyCharacter::Attack);
 
+	}
+}
+
+void AMyCharacter::GetHit(const FVector& ImpactPoint)
+{
+	if (HitParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
+			HitParticle, ImpactPoint);
 	}
 }
 
@@ -109,6 +126,7 @@ void AMyCharacter::EKeyPress()
 		CharacterState = ECharacterState::ECS_EquipOneHand;
 
 		EquippedWeapon = MyWeapon;
+		MyWeapon = nullptr;
 	}
 }
 

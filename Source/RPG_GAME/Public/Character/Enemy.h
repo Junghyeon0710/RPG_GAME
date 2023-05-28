@@ -32,23 +32,39 @@ protected:
 	
 
 	virtual void PlayMontage(const FName Section, UAnimMontage* Montage)override;
+	virtual void PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section) override;
+	void Attack();
 	bool InTargetRange(AActor* Target, double Radius);
 	void MoveToTaget(AActor* Target);
 	AActor* ChoosePatrolTarget();
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
-	//virtual void PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section) override;
+	virtual void AttackEnd() override;
+
+	/**combat */
+
+	void StartAttackTimer();
+
+	FTimerHandle AttackTimer;
+
+	UPROPERTY(EditAnywhere,Category ="Combat")
+	float AttackMin = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float AttackMax = 1.f;
 
 	UFUNCTION()
 	void PawnSeen(APawn* SeenPawn);
 
 	FName DeathMontageSection();
 
-	UPROPERTY(EditAnywhere, Category = "파티클")
-	class UParticleSystem* HitParticle;
+	
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;
+
+	UPROPERTY(BlueprintReadOnly)
+	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 private:
 
 	UPROPERTY(VisibleAnywhere)
@@ -92,7 +108,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	class UPawnSensingComponent* PawnSensing;
 
-	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> WeaponClass;

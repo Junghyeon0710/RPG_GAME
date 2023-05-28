@@ -50,6 +50,10 @@ void AWeapon::ItemEquip(USceneComponent* Parent, const FName Name,AActor* NewOwn
 
 void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (GetOwner()->ActorHasTag(TEXT("Enemy")) && OtherActor->ActorHasTag(TEXT("Enemy")))
+	{
+		return;//무기 소유한 사람도 적이고 상대도 적이라면 
+	}
 
 	const FVector StartLoctaion = Start->GetComponentLocation();
 	const FVector EndLocation = End->GetComponentLocation();
@@ -76,9 +80,15 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		BoxHit,
 		true //이 클래스를 무시할건지
 	);
+	IgnoreActor.AddUnique(BoxHit.GetActor()); //맞은 배우를 배열에 저장해줌
+	// 캐릭터에 클래스에 가서 배열을 다시 비워줘야 계속 타격 가능
 
 	if (BoxHit.GetActor())
 	{
+		if (GetOwner()->ActorHasTag(TEXT("Enemy")) && BoxHit.GetActor()->ActorHasTag(TEXT("Enemy")))
+		{
+			return;//무기 소유한 사람도 적이고 상대도 적이라면 
+		}
 		UGameplayStatics::ApplyDamage(
 			BoxHit.GetActor(),
 			Damage,
@@ -92,8 +102,6 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		{
 			HitInterface->GetHit(BoxHit.ImpactPoint);
 		}
-		IgnoreActor.AddUnique(BoxHit.GetActor()); //맞은 배우를 배열에 저장해줌
-		// 캐릭터에 클래스에 가서 배열을 다시 비워줘야 계속 타격 가능
 		
 		CreateFields(BoxHit.ImpactPoint); //필드생성 액터 부시기
 

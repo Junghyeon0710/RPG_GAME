@@ -25,11 +25,21 @@ protected:
 	virtual void PlayMontage(const FName Section, UAnimMontage* Montage);
 	UFUNCTION(BlueprintCallable)
 	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
+	UFUNCTION(BlueprintCallable)
+	virtual void AttackEnd();
+
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	class AWeapon* EquippedWeapon;
 
+	UPROPERTY(EditAnywhere, Category = Montage)
+	class UAnimMontage* AttackMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Montage")
+	TArray<FName> MontageSection;
+
+	UPROPERTY(EditAnywhere, Category = "파티클")
+	class UParticleSystem* HitParticle;
 
 	ECharacterState CharacterState = ECharacterState::ECS_Unequipped;
 	ECharacterAnimationState CharacterAnimaionState = ECharacterAnimationState::EAS_None;

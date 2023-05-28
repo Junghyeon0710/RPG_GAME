@@ -44,6 +44,7 @@ AEnemy::AEnemy()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (DeathPose != EDeathPose::EDP_Alive) return;
 	if (EnemyState > EEnemyState::EES_Patrolling)
 	{
 		CheckCombatTarget();
@@ -78,6 +79,8 @@ void AEnemy::BeginPlay()
 		Weapon->ItemEquip(GetMesh(),FName("RightHandSocket"), this, this);
 		EquippedWeapon = Weapon;
 	}
+	Tags.Add(FName("Enemy"));
+
 }
 
 
@@ -107,6 +110,8 @@ void AEnemy::PlayMontage(const FName Section, UAnimMontage* Montage)
 	Super::PlayMontage(Section, Montage);
 }
 
+
+
 bool AEnemy::InTargetRange(AActor* Target, double Radius)
 {
 	//타겟거리
@@ -124,7 +129,7 @@ void AEnemy::MoveToTaget(AActor* Target)
 	
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(15.f);
+	MoveRequest.SetAcceptanceRadius(15.f); //반경 몇에서 멈추나
 	EnemyController->MoveTo(MoveRequest);
 	
 }
@@ -157,24 +162,28 @@ void AEnemy::CheckCombatTarget()
 		{
 			HealthBarWidget->SetVisibility(false);
 		}
-		EnemyState = EEnemyState::EES_Patrolling;
-		UE_LOG(LogTemp, Error, TEXT("EES_Patrolling"));
-		GetCharacterMovement()->MaxWalkSpeed = 225.f;
-		MoveToTaget(PatrolTarget);
+		GetWorldTimerManager().ClearTimer(AttackTimer);
+		if (EnemyState != EEnemyState::EES_Engaged)
+		{
+			EnemyState = EEnemyState::EES_Patrolling;
+			GetCharacterMovement()->MaxWalkSpeed = 225.f;
+			MoveToTaget(PatrolTarget);
+		}
 	}
 	else if (!InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Chasing)
 	{
-		EnemyState = EEnemyState::EES_Chasing;
-		UE_LOG(LogTemp, Error, TEXT("EES_Chasing"));
-		GetCharacterMovement()->MaxWalkSpeed = 555.f;
-		MoveToTaget(CombatTarget);
+		GetWorldTimerManager().ClearTimer(AttackTimer);
+		if (EnemyState != EEnemyState::EES_Engaged)
+		{
+			EnemyState = EEnemyState::EES_Chasing;
+			GetCharacterMovement()->MaxWalkSpeed = 555.f;
+			MoveToTaget(CombatTarget);
+		}
+		
 	}
-	else if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking)
+	else if (InTargetRange(CombatTarget, AttackRadius) && EnemyState != EEnemyState::EES_Attacking && EnemyState != EEnemyState::EES_Dead && EnemyState != EEnemyState::EES_Engaged)
 	{
-
-		EnemyState = EEnemyState::EES_Attacking;
-		UE_LOG(LogTemp, Error, TEXT("EES_Attacking"));
-		// Attack Montage
+		StartAttackTimer();
 	}
 }
 
@@ -189,23 +198,48 @@ void AEnemy::CheckPatrolTarget()
 	}
 }
 
-void AEnemy::PawnSeen(APawn* SeenPawn)
+void AEnemy::AttackEnd()
 {
-	if (EnemyState == EEnemyState::EES_Chasing) return;
-	if (SeenPawn->ActorHasTag(FName("MyCharacter")))
-	{
-		GetWorldTimerManager().ClearTimer(PatrolTimer);
-		GetCharacterMovement()->MaxWalkSpeed = 500.f;
-		CombatTarget = SeenPawn;
-		if (EnemyState != EEnemyState::EES_Attacking)
-		{
-			EnemyState = EEnemyState::EES_Chasing;
-			UE_LOG(LogTemp, Error, TEXT("PawnSee"));
-			MoveToTaget(CombatTarget);
-		}
-	}
+	EnemyState = EEnemyState::EES_NoState;
+	CheckCombatTarget();
 }
 
+void AEnemy::StartAttackTimer()
+{
+	EnemyState = EEnemyState::EES_Attacking;
+	const float AttackTime = FMath::RandRange(AttackMin, AttackMax);
+	GetWorldTimerManager().SetTimer(AttackTimer,this, &AEnemy::Attack,AttackTime);
+}
+
+void AEnemy::PawnSeen(APawn* SeenPawn)
+{
+	const bool bShouldChaseTarget =
+		EnemyState != EEnemyState::EES_Dead &&
+		EnemyState != EEnemyState::EES_Chasing &&
+		EnemyState < EEnemyState::EES_Attacking &&
+		EnemyState != EEnemyState::EES_Engaged &&
+		SeenPawn->ActorHasTag(FName("EngagebleTarget"));
+
+	if (bShouldChaseTarget)
+	{
+		CombatTarget = SeenPawn;
+		GetWorldTimerManager().ClearTimer(PatrolTimer);
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+		MoveToTaget(CombatTarget);
+	}
+	
+}
+
+void AEnemy::PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section)
+{
+	Super::PlayAttackMontage(Montage, Section);
+}
+void AEnemy::Attack()
+{
+	EnemyState = EEnemyState::EES_Engaged;
+	PlayAttackMontage(AttackMontage, MontageSection);
+}
 void AEnemy::patrolTimerFinished()
 {
 	MoveToTaget(PatrolTarget);
@@ -217,9 +251,12 @@ void AEnemy::GetHit(const FVector& ImpactPoint)
 		DirectionalHitReact(ImpactPoint,HitMontage);
 	else
 	{
+		EnemyState = EEnemyState::EES_Dead;
 		PlayMontage(DeathMontageSection(), DeathMontage);
+		GetWorldTimerManager().ClearTimer(AttackTimer);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetLifeSpan(5.f);
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 	
 	if (HitParticle)
@@ -238,7 +275,6 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	}
 
 	CombatTarget = EventInstigator->GetPawn();
-	UE_LOG(LogTemp, Error, TEXT("TakeDmage"));
 	EnemyState = EEnemyState::EES_Chasing;
 	GetCharacterMovement()->MaxWalkSpeed = 555.f;
 	MoveToTaget(CombatTarget);
