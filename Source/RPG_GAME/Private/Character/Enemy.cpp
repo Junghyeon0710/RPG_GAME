@@ -129,7 +129,7 @@ void AEnemy::MoveToTaget(AActor* Target)
 	
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(15.f); //반경 몇에서 멈추나
+	MoveRequest.SetAcceptanceRadius(45.f); //반경 몇에서 멈추나
 	EnemyController->MoveTo(MoveRequest);
 	
 }
