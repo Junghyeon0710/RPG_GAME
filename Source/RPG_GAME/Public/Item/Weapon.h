@@ -44,4 +44,5 @@ private:
 	float Damage = 20.f;
 public:
 	FORCEINLINE UBoxComponent* GetBox() const { return Box; }
+	void WeaponSetCollision(ECollisionEnabled::Type CollisionEnabled);
 };

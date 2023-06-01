@@ -12,6 +12,7 @@
 #include "./Item/Weapon.h"
 #include "Animation/AnimMontage.h"
 #include <Components/BoxComponent.h>
+#include "Components/AttribtueComponent.h"
 
 
 AMyCharacter::AMyCharacter()
@@ -78,12 +79,16 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
-void AMyCharacter::GetHit(const FVector& ImpactPoint)
+void AMyCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 {
-	if (HitParticle)
+	Super::GetHit(ImpactPoint, Hitter);
+	CharacterAnimaionState = ECharacterAnimationState::EAS_HitReaction;
+	if(EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
+	if (Attributes && Attributes->IsAlive())
+	{}
+	else
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
-			HitParticle, ImpactPoint);
+
 	}
 }
 
@@ -132,7 +137,7 @@ void AMyCharacter::EKeyPress()
 
 void AMyCharacter::Attack()
 {
-	if (CharacterState == ECharacterState::ECS_EquipOneHand)
+	if (CharacterState == ECharacterState::ECS_EquipOneHand &&CharacterAnimaionState != ECharacterAnimationState::EAS_HitReaction)
 	{
 		CharacterAnimaionState = ECharacterAnimationState::EAS_Attacking;
 		PlayAttackMontage(AttackMontage, MontageSection);
@@ -145,6 +150,11 @@ void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , TArray<FName> Secti
 }
 
 void AMyCharacter::AttackEnd()
+{
+	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
+}
+
+void AMyCharacter::HitReactEnd()
 {
 	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
 }

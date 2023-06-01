@@ -24,8 +24,6 @@ AEnemy::AEnemy()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetGenerateOverlapEvents(true);
-
-	Attributes = CreateDefaultSubobject<UAttribtueComponent>(TEXT("Attribute"));
 	
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
@@ -83,32 +81,6 @@ void AEnemy::BeginPlay()
 
 }
 
-
-FName AEnemy::DeathMontageSection()
-{ 
-	const int32 Section = FMath::RandRange(0, 1);
-	FName SectionName;
-
-	switch(Section)
-	{
-	case 0:
-		SectionName = FName("Death1");
-		DeathPose = EDeathPose::EDP_Death1;
-		break;
-	case 1:
-		SectionName = FName("Death2");
-		DeathPose = EDeathPose::EDP_Death2;
-		break;
-	default:
-			break;
-	}
-	return SectionName;
-}
-
-void AEnemy::PlayMontage(const FName Section, UAnimMontage* Montage)
-{
-	Super::PlayMontage(Section, Montage);
-}
 
 
 
@@ -245,25 +217,25 @@ void AEnemy::patrolTimerFinished()
 	MoveToTaget(PatrolTarget);
 }
 
-void AEnemy::GetHit(const FVector& ImpactPoint)
+void AEnemy::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 {
-	if (Attributes && Attributes->IsAlive())
-		DirectionalHitReact(ImpactPoint,HitMontage);
+	Super::GetHit(ImpactPoint,Hitter);
+	if (Attributes->IsAlive())
+	{ }
 	else
 	{
 		EnemyState = EEnemyState::EES_Dead;
-		PlayMontage(DeathMontageSection(), DeathMontage);
 		GetWorldTimerManager().ClearTimer(AttackTimer);
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SetLifeSpan(5.f);
 		GetCharacterMovement()->bOrientRotationToMovement = false;
+
+		
 	}
-	
-	if (HitParticle)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
-			HitParticle, ImpactPoint);
-	}
+	GetWorldTimerManager().ClearTimer(PatrolTimer);
+	GetWorldTimerManager().ClearTimer(AttackTimer);
+	if (EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
+	StopAttackMontage();
 }
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -273,10 +245,16 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 		Attributes->ReceiveDamage(DamageAmount);
 		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());	
 	}
-
 	CombatTarget = EventInstigator->GetPawn();
-	EnemyState = EEnemyState::EES_Chasing;
-	GetCharacterMovement()->MaxWalkSpeed = 555.f;
-	MoveToTaget(CombatTarget);
+	if (InTargetRange(CombatTarget, AttackRadius))
+	{
+		EnemyState = EEnemyState::EES_Attacking;
+	}
+	else if (!InTargetRange(CombatTarget, AttackRadius))
+	{
+		EnemyState = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = 555.f;
+		MoveToTaget(CombatTarget);
+	}
 	return DamageAmount;
 }

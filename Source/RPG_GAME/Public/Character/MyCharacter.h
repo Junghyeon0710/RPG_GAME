@@ -21,7 +21,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void GetHit(const FVector& ImpactPoint) override;
+	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -67,8 +67,10 @@ protected:
 	UPROPERTY(VisibleAnywhere,Category="Item")
 	class AItem* MyItem;
 
-	
 	virtual void AttackEnd() override;
+
+	UFUNCTION(BlueprintCallable)
+	void HitReactEnd();
 
 private:
 	

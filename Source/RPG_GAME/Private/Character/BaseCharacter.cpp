@@ -5,10 +5,14 @@
 #include <Item/Weapon.h>
 #include <Components/BoxComponent.h>
 #include "Animation/AnimMontage.h"
-
+#include "Components/AttribtueComponent.h"
+#include <Kismet/GameplayStatics.h>
 ABaseCharacter::ABaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	Attributes = CreateDefaultSubobject<UAttribtueComponent>(TEXT("Attribute"));
+
 }
 
 void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint, UAnimMontage* Montage)
@@ -56,6 +60,23 @@ void ABaseCharacter::BeginPlay()
 	
 }
 
+void ABaseCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
+{
+	if (Attributes && Attributes->IsAlive() && Hitter)
+		DirectionalHitReact(Hitter->GetActorLocation(), HitMontage);
+	else
+	{
+		PlayMontage(DeathMontageSection(), DeathMontage);
+		EquippedWeapon->SetActorEnableCollision(false);
+	}
+	
+	if (HitParticle)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
+			HitParticle, ImpactPoint);
+	}
+}
+
 void ABaseCharacter::PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -78,6 +99,16 @@ void ABaseCharacter::PlayMontage(const FName Section, UAnimMontage* Montage)
 	}
 }
 
+void ABaseCharacter::StopAttackMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Stop(0.25, AttackMontage);
+	}
+
+}
+
 void ABaseCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
 {
 	if (EquippedWeapon && EquippedWeapon->GetBox())
@@ -89,6 +120,27 @@ void ABaseCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
 
 void ABaseCharacter::AttackEnd()
 {
+}
+
+FName ABaseCharacter::DeathMontageSection()
+{
+		const int32 Section = FMath::RandRange(0, 1);
+		FName SectionName;
+
+		switch (Section)
+		{
+		case 0:
+			SectionName = FName("Death1");
+			DeathPose = EDeathPose::EDP_Death1;
+			break;
+		case 1:
+			SectionName = FName("Death2");
+			DeathPose = EDeathPose::EDP_Death2;
+			break;
+		default:
+			break;
+		}
+		return SectionName;
 }
 
 

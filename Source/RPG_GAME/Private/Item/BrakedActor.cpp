@@ -29,7 +29,7 @@ void ABrakedActor::Tick(float DeltaTime)
 
 }
 
-void ABrakedActor::GetHit(const FVector& ImpactPoint)
+void ABrakedActor::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 {
 	//DrawDebugSphere(GetWorld(), ImpactPoint, 25.f, 12.f, FColor::Black, false, 5.f);
 	if (bBarekd) return;

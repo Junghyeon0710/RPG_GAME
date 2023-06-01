@@ -31,5 +31,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	virtual void GetHit(const FVector& ImpactPoint)override;
+	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter)override;
 };

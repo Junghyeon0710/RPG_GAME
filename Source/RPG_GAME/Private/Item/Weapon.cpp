@@ -60,6 +60,7 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 	
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
+	ActorsToIgnore.AddUnique(GetOwner()); //무기 소유자 무시
 
 	for (AActor* Actor : IgnoreActor) // 맞은 배우를 한번만 맞게해준다.
 	{
@@ -82,6 +83,7 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 	);
 	IgnoreActor.AddUnique(BoxHit.GetActor()); //맞은 배우를 배열에 저장해줌
 	// 캐릭터에 클래스에 가서 배열을 다시 비워줘야 계속 타격 가능
+	//DrawDebugSphere(GetWorld(), BoxHit.ImpactPoint, 12.f, 10, FColor::White, false, 3.f);
 
 	if (BoxHit.GetActor())
 	{
@@ -100,7 +102,7 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		IMyInterface* HitInterface = Cast<IMyInterface>(BoxHit.GetActor());
 		if (HitInterface)
 		{
-			HitInterface->GetHit(BoxHit.ImpactPoint);
+			HitInterface->GetHit(BoxHit.ImpactPoint,GetOwner());
 		}
 		
 		CreateFields(BoxHit.ImpactPoint); //필드생성 액터 부시기
@@ -108,6 +110,11 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		
 	}
 
+}
+
+void AWeapon::WeaponSetCollision(ECollisionEnabled::Type CollisionEnabled)
+{
+	Box->SetCollisionEnabled(CollisionEnabled);
 }
 
 

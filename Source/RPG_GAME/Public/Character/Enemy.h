@@ -18,20 +18,11 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void GetHit(const FVector& ImpactPoint) override;
+	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 protected:
 	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere,Category=Montage)
-	class UAnimMontage* HitMontage;
-
-	UPROPERTY(EditAnywhere, Category = Montage)
-	class UAnimMontage* DeathMontage;
-	
-
-	virtual void PlayMontage(const FName Section, UAnimMontage* Montage)override;
 	virtual void PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section) override;
 	void Attack();
 	bool InTargetRange(AActor* Target, double Radius);
@@ -56,25 +47,19 @@ protected:
 	UFUNCTION()
 	void PawnSeen(APawn* SeenPawn);
 
-	FName DeathMontageSection();
-
-	
-
-	UPROPERTY(BlueprintReadOnly)
-	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 
 	UPROPERTY(BlueprintReadOnly)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
+
+	UPROPERTY(BlueprintReadOnly,Category = Combat)
+	AActor* CombatTarget;
 private:
 
-	UPROPERTY(VisibleAnywhere)
-	class UAttribtueComponent* Attributes;
 
 	UPROPERTY(VisibleAnywhere)
 	class UHealthBarComponent* HealthBarWidget;
 
-	UPROPERTY()
-	AActor* CombatTarget;
+
 
 	UPROPERTY(EditAnywhere, Category = "반경")
 	float CombatRadius = 500.f;

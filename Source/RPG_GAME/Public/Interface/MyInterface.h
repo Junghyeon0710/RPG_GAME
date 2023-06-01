@@ -22,5 +22,5 @@ class RPG_GAME_API IMyInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void GetHit(const FVector& ImpactPoint);
+	virtual void GetHit(const FVector& ImpactPoint,AActor* Hitter);
 };
