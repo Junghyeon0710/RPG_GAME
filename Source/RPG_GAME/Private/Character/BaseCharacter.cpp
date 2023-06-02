@@ -7,6 +7,7 @@
 #include "Animation/AnimMontage.h"
 #include "Components/AttribtueComponent.h"
 #include <Kismet/GameplayStatics.h>
+#include <DrawDebugHelpers.h>
 ABaseCharacter::ABaseCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -67,7 +68,10 @@ void ABaseCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 	else
 	{
 		PlayMontage(DeathMontageSection(), DeathMontage);
-		EquippedWeapon->SetActorEnableCollision(false);
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->SetActorEnableCollision(false);
+		}	
 	}
 	
 	if (HitParticle)
@@ -120,6 +124,29 @@ void ABaseCharacter::SetCollision(ECollisionEnabled::Type CollisionEnabled)
 
 void ABaseCharacter::AttackEnd()
 {
+}
+
+FVector ABaseCharacter::GetTranslationWarpTarget()
+{
+	if (CombatTarget == nullptr) return FVector();
+
+	const FVector CombatTargetLocation = CombatTarget->GetActorLocation();
+	const FVector Location = GetActorLocation();
+
+	FVector TargetToMe =( Location - CombatTargetLocation).GetSafeNormal();
+	TargetToMe *= WarpTargetDistance;
+	//DrawDebugSphere(GetWorld(), (CombatTargetLocation + TargetToMe), 25.f, 12.f, FColor::White, false, 5.f);
+	return CombatTargetLocation + TargetToMe;
+
+}
+
+FVector ABaseCharacter::GetRotationWarpTarget()
+{
+	if (CombatTarget)
+	{
+		return CombatTarget->GetActorLocation();
+	}
+	return FVector();
 }
 
 FName ABaseCharacter::DeathMontageSection()

@@ -13,6 +13,9 @@
 #include "Animation/AnimMontage.h"
 #include <Components/BoxComponent.h>
 #include "Components/AttribtueComponent.h"
+#include <HUD/MyHUD.h>
+#include <HUD/MainCharacterOverlay.h>
+#include <Components/CapsuleComponent.h>
 
 
 AMyCharacter::AMyCharacter()
@@ -55,6 +58,20 @@ void AMyCharacter::BeginPlay()
 	}
 	Tags.Add(FName("EngagebleTarget"));
 
+	APlayerController* PlayerController =Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		AMyHUD* MyHUD = Cast<AMyHUD>(PlayerController->GetHUD());
+		if (MyHUD)
+		{
+			MyOverlay = MyHUD->GetMyOverlay();
+			if (MyOverlay && Attributes)
+			{
+				MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+			}
+		}		
+	}
+
 }
 
 
@@ -70,13 +87,31 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMyCharacter::Jump);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyCharacter::Look);
 		EnhancedInputComponent->BindAction(EKeyPressAction, ETriggerEvent::Triggered, this, &AMyCharacter::EKeyPress);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AMyCharacter::Attack);
 
 	}
+}
+
+void AMyCharacter::Jump()
+{
+	if (CharacterState == ECharacterState::ECS_Unequipped)
+	{
+		Super::Jump();
+	}
+}
+
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Attributes->ReceiveDamage(DamageAmount);
+	if (MyOverlay && Attributes)
+	{
+		MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+	}
+	return DamageAmount;
 }
 
 void AMyCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
@@ -88,7 +123,8 @@ void AMyCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 	{}
 	else
 	{
-
+		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 

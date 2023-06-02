@@ -27,10 +27,12 @@ enum class EDeathPose : uint8
 UENUM(BlueprintType)
 enum class EEnemyState : uint8
 {
+	EES_NoState UMETA(DisplayName = "NoState"), //아무런상태아님
+
 	EES_Dead UMETA(DisplayName = "Dead"), //죽음
 	EES_Patrolling UMETA(DisplayName = "Patrolling"), //순찰
 	EES_Chasing UMETA(DisplayName = "Chasing"), //쫓다
 	EES_Attacking UMETA(DisplayName = "Attacking"), //공격
-	EES_Engaged UMETA(DisplayName = "Engaged"), //교전
-	EES_NoState UMETA(DisplayName = "NoState") //아무런상태아님
+	EES_Engaged UMETA(DisplayName = "Engaged") //교전
+	
 };

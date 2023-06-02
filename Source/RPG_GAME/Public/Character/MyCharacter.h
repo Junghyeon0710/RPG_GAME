@@ -20,7 +20,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	virtual void Jump() override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
 
 protected:
@@ -73,7 +74,8 @@ protected:
 	void HitReactEnd();
 
 private:
-	
+	UPROPERTY()
+	class UMainCharacterOverlay* MyOverlay;
 public:
 	void SetItme(AItem* Item) { MyItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const{
