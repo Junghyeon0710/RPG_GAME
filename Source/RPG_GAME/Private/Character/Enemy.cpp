@@ -15,6 +15,7 @@
 #include "AIController.h"
 #include "Perception/PawnSensingComponent.h"
 #include "./Item/Weapon.h"
+#include "./Item/Soul.h"
 
 
 AEnemy::AEnemy()
@@ -176,6 +177,23 @@ void AEnemy::AttackEnd()
 	CheckCombatTarget();
 }
 
+void AEnemy::Die()
+{
+	Super::Die();
+	EnemyState = EEnemyState::EES_Dead;
+	GetWorldTimerManager().ClearTimer(AttackTimer);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetLifeSpan(5.f);
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	UWorld* World = GetWorld();
+	if (World && SoulClass && Attributes)
+	{
+		const FVector SpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 45.f);
+		ASoul* SpawnedSoul = World->SpawnActor<ASoul>(SoulClass, SpawnLocation, GetActorRotation());
+		SpawnedSoul->SetSoul(Attributes->GetSoul());
+	}
+}
+
 void AEnemy::StartAttackTimer()
 {
 	EnemyState = EEnemyState::EES_Attacking;
@@ -209,6 +227,11 @@ void AEnemy::PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section)
 }
 void AEnemy::Attack()
 {
+	if (CombatTarget && CombatTarget->ActorHasTag(FName("Dead")))
+	{
+		CombatTarget = nullptr;
+	}
+	if (CombatTarget == nullptr) return;
 	EnemyState = EEnemyState::EES_Engaged;
 	PlayAttackMontage(AttackMontage, MontageSection);
 }
@@ -220,21 +243,9 @@ void AEnemy::patrolTimerFinished()
 void AEnemy::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 {
 	Super::GetHit(ImpactPoint,Hitter);
-	if (Attributes->IsAlive())
-	{ }
-	else
-	{
-		EnemyState = EEnemyState::EES_Dead;
-		GetWorldTimerManager().ClearTimer(AttackTimer);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SetLifeSpan(5.f);
-		GetCharacterMovement()->bOrientRotationToMovement = false;
 
-		
-	}
 	GetWorldTimerManager().ClearTimer(PatrolTimer);
 	GetWorldTimerManager().ClearTimer(AttackTimer);
-	if (EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
 	StopAttackMontage();
 }
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

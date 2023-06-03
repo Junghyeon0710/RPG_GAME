@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
 #include "InputActionValue.h"
+#include <Interface/PickupInterface.h>
 #include "MyCharacter.generated.h"
 
 
@@ -12,7 +13,7 @@
  * 
  */
 UCLASS()
-class RPG_GAME_API AMyCharacter : public ABaseCharacter
+class RPG_GAME_API AMyCharacter : public ABaseCharacter,public IPickupInterface
 {
 	GENERATED_BODY()
 public:
@@ -23,9 +24,12 @@ public:
 	virtual void Jump() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
-
+	virtual void SetItem(AItem* Item) override;
+	virtual void AddSouls(class ASoul* Soul) override;
+	virtual void AddGold(class Atreasure* Gold) override;
 protected:
 	virtual void BeginPlay() override;
+	virtual void Die() override;
 
 	UPROPERTY(VisibleAnywhere,Category = Camera)
 	class USpringArmComponent* SpringArm;
@@ -77,7 +81,7 @@ private:
 	UPROPERTY()
 	class UMainCharacterOverlay* MyOverlay;
 public:
-	void SetItme(AItem* Item) { MyItem = Item; }
+	//void SetItme(AItem* Item) { MyItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const{
 		return CharacterState;
 	}

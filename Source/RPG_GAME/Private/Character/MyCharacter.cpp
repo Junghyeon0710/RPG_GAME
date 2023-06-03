@@ -16,6 +16,8 @@
 #include <HUD/MyHUD.h>
 #include <HUD/MainCharacterOverlay.h>
 #include <Components/CapsuleComponent.h>
+#include <Item/Soul.h>
+#include <Item/treasure.h>
 
 
 AMyCharacter::AMyCharacter()
@@ -68,10 +70,19 @@ void AMyCharacter::BeginPlay()
 			if (MyOverlay && Attributes)
 			{
 				MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+				MyOverlay->SetSoul(0);
+				MyOverlay->SetGold(0);
 			}
 		}		
 	}
 
+}
+
+void AMyCharacter::Die()
+{
+	Super::Die();
+	CharacterState = ECharacterState::ECS_Dead;
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 
@@ -117,14 +128,35 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 void AMyCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 {
 	Super::GetHit(ImpactPoint, Hitter);
-	CharacterAnimaionState = ECharacterAnimationState::EAS_HitReaction;
-	if(EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
-	if (Attributes && Attributes->IsAlive())
-	{}
-	else
+	if (EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
+	if (Attributes && Attributes->GetHealthPercent() > 0.f)
 	{
-		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CharacterAnimaionState = ECharacterAnimationState::EAS_HitReaction;
+	}
+	
+	
+}
+
+void AMyCharacter::SetItem(AItem* Item)
+{
+	MyItem = Item;
+}
+
+void AMyCharacter::AddSouls(ASoul* Soul)
+{
+	if (Attributes && MyOverlay)
+	{
+		Attributes->AddSouls(Soul->GetSoul());
+		MyOverlay->SetSoul(Attributes->GetSoul());
+	}
+}
+
+void AMyCharacter::AddGold(Atreasure* Gold)
+{
+	if (Attributes && MyOverlay)
+	{
+		Attributes->AddGold(Gold->GetGold());
+		MyOverlay->SetGold(Attributes->GetGold());
 	}
 }
 

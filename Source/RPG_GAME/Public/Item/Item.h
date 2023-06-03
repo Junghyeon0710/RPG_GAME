@@ -40,6 +40,12 @@ protected:
 	virtual void SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	EItemState ItemState = EItemState::EIS_Hovering;
+
+	UPROPERTY(VisibleAnywhere)
+	class UNiagaraComponent* ItemEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UNiagaraSystem* PickupEffec;
 private:
 
 	UPROPERTY(EditAnywhere,Category = "사인")

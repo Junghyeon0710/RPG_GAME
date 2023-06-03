@@ -67,11 +67,7 @@ void ABaseCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 		DirectionalHitReact(Hitter->GetActorLocation(), HitMontage);
 	else
 	{
-		PlayMontage(DeathMontageSection(), DeathMontage);
-		if (EquippedWeapon)
-		{
-			EquippedWeapon->SetActorEnableCollision(false);
-		}	
+		Die();
 	}
 	
 	if (HitParticle)
@@ -100,6 +96,16 @@ void ABaseCharacter::PlayMontage(const FName Section, UAnimMontage* Montage)
 	{
 		AnimInstance->Montage_Play(Montage);
 		AnimInstance->Montage_JumpToSection(Section, Montage);
+	}
+}
+
+void ABaseCharacter::Die()
+{
+	Tags.Add(FName("Dead"));
+	PlayMontage(DeathMontageSection(), DeathMontage);
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->SetActorEnableCollision(false);
 	}
 }
 

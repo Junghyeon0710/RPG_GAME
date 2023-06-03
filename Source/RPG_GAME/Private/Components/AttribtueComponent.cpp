@@ -37,6 +37,16 @@ bool UAttribtueComponent::IsAlive()
 	return Health > 0.f;
 }
 
+void UAttribtueComponent::AddSouls(int32 NumberofSouls)
+{
+	Soul += NumberofSouls;
+}
+
+void UAttribtueComponent::AddGold(int32 NumberofGold)
+{
+	Gold += NumberofGold;
+}
+
 
 void UAttribtueComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

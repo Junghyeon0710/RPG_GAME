@@ -24,6 +24,7 @@ protected:
 	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void PlayAttackMontage(UAnimMontage* Montage,  TArray<FName> Section); //공격 몽타주
 	virtual void PlayMontage(const FName Section, UAnimMontage* Montage);
+	virtual void Die();
 	void StopAttackMontage();
 	UFUNCTION(BlueprintCallable)
 	void SetCollision(ECollisionEnabled::Type CollisionEnabled);

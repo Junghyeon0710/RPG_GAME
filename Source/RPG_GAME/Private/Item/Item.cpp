@@ -4,8 +4,8 @@
 #include "Item/Item.h"
 #include <Components/SphereComponent.h>
 #include <Components/StaticMeshComponent.h>
-#include <./Character/MyCharacter.h>
-
+#include <Interface/PickupInterface.h>
+#include "NiagaraComponent.h"
 // Sets default values
 AItem::AItem()
 {
@@ -19,7 +19,8 @@ AItem::AItem()
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(RootComponent);
 
-	
+	ItemEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Embers"));
+	ItemEffect->SetupAttachment(RootComponent);
 }
 
 void AItem::Tick(float DeltaTime)
@@ -45,24 +46,24 @@ void AItem::BeginPlay()
 void AItem::SphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	
-	AMyCharacter* MyCharacter = Cast<AMyCharacter>(OtherActor);
+	IPickupInterface* PickupInterface = Cast<IPickupInterface>(OtherActor);
 
-	if (MyCharacter)
+	if (PickupInterface)
 	{
-		MyCharacter->SetItme(this);
+		PickupInterface->SetItem(this);
 	}
 	
 }
 
 void AItem::SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	AMyCharacter* MyCharacter = Cast<AMyCharacter>(OtherActor);
-	if (MyCharacter)
+	IPickupInterface* PickupInterface = Cast<IPickupInterface>(OtherActor);
+
+	if (PickupInterface)
 	{
-		MyCharacter->SetItme(nullptr);
+		PickupInterface->SetItem(nullptr);
 	}
 }
-
 float AItem::MySin()
 {
 	return Amplitude * FMath::Sin(RunningTime * TimeConstant);

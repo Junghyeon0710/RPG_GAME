@@ -31,6 +31,7 @@ protected:
 	void CheckCombatTarget();
 	void CheckPatrolTarget();
 	virtual void AttackEnd() override;
+	virtual void Die() override;
 
 	/**combat */
 
@@ -97,6 +98,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> WeaponClass;
 
-
+	UPROPERTY(EditAnywhere,Category=Combat)
+	TSubclassOf<class ASoul> SoulClass;
 	
 };
