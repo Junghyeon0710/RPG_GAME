@@ -13,7 +13,8 @@ enum class ECharacterAnimationState : uint8
 {
 	EAS_None UMETA(DisplayName = "None"),
 	EAS_HitReaction UMETA(DisplayName = "HitReaction"),
-	EAS_Attacking UMETA(DisplayName = "Attack")
+	EAS_Attacking UMETA(DisplayName = "Attack"),
+	EAS_Dodge UMETA(DisplayName = "Dodge")
 
 };
 

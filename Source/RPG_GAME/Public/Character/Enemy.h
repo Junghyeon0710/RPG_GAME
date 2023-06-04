@@ -67,6 +67,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "반경")
 	float AttackRadius = 150.f;
 
+	UPROPERTY(EditAnywhere, Category = "반경")
+	float AcceptanceRadius = 45.f;
+
 	/** Navigation*/
 
 	class AAIController* EnemyController;

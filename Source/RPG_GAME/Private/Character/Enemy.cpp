@@ -75,7 +75,7 @@ void AEnemy::BeginPlay()
 	if (World && WeaponClass)
 	{
 		AWeapon* Weapon = World->SpawnActor<AWeapon>(WeaponClass);
-		Weapon->ItemEquip(GetMesh(),FName("RightHandSocket"), this, this);
+		Weapon->ItemEquip(GetMesh(),FName("WeaponSocket"), this, this);
 		EquippedWeapon = Weapon;
 	}
 	Tags.Add(FName("Enemy"));
@@ -102,7 +102,7 @@ void AEnemy::MoveToTaget(AActor* Target)
 	
 	FAIMoveRequest MoveRequest;
 	MoveRequest.SetGoalActor(Target);
-	MoveRequest.SetAcceptanceRadius(45.f); //반경 몇에서 멈추나
+	MoveRequest.SetAcceptanceRadius(AcceptanceRadius); //반경 몇에서 멈추나
 	EnemyController->MoveTo(MoveRequest);
 	
 }
@@ -188,9 +188,14 @@ void AEnemy::Die()
 	UWorld* World = GetWorld();
 	if (World && SoulClass && Attributes)
 	{
-		const FVector SpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 45.f);
+		const FVector SpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 125.f);
 		ASoul* SpawnedSoul = World->SpawnActor<ASoul>(SoulClass, SpawnLocation, GetActorRotation());
-		SpawnedSoul->SetSoul(Attributes->GetSoul());
+		if (SpawnedSoul)
+		{
+			SpawnedSoul->SetSoul(Attributes->GetSoul());
+			SpawnedSoul->SetOwner(this);
+		}
+		
 	}
 }
 

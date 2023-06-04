@@ -89,7 +89,12 @@ void AMyCharacter::Die()
 void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (Attributes && MyOverlay)
+	{
+		Attributes->RegenStamina(DeltaTime);
+		MyOverlay->SetStaminaProgressBarPercent(Attributes->GetStaminaPercent());
+	}
+		
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -103,6 +108,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyCharacter::Look);
 		EnhancedInputComponent->BindAction(EKeyPressAction, ETriggerEvent::Triggered, this, &AMyCharacter::EKeyPress);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AMyCharacter::Attack);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AMyCharacter::Dodge);
 
 	}
 }
@@ -195,6 +201,10 @@ void AMyCharacter::EKeyPress()
 	AWeapon* MyWeapon = Cast<AWeapon>(MyItem);
 	if (MyWeapon)
 	{
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->Destroy();
+		}
 		MyWeapon->ItemEquip(GetMesh(),FName("RightHandSocket"), this, this);
 		CharacterState = ECharacterState::ECS_EquipOneHand;
 
@@ -212,12 +222,34 @@ void AMyCharacter::Attack()
 	}
 }
 
+void AMyCharacter::Dodge()
+{
+	if (CharacterAnimaionState != ECharacterAnimationState::EAS_None) return;
+	if (Attributes && Attributes->GetStamina() >Attributes->GetDodgeCost())
+	{
+		PlayMontage(FName("Dodge1"), DodgeMontage);
+		CharacterAnimaionState = ECharacterAnimationState::EAS_Dodge;
+		Attributes->UseStamina(Attributes->GetDodgeCost());
+		if (MyOverlay)
+		{
+			MyOverlay->SetStaminaProgressBarPercent(Attributes->GetStaminaPercent());
+		}
+	}
+	
+	
+}
+
 void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , TArray<FName> Section)
 {
 	Super::PlayAttackMontage(Montage, Section);
 }
 
 void AMyCharacter::AttackEnd()
+{
+	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
+}
+
+void AMyCharacter::DodgeEnd()
 {
 	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
 }

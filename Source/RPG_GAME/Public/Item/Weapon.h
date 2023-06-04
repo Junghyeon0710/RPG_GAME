@@ -42,6 +42,12 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
+
+	UPROPERTY(EditAnywhere, Category = Box)
+	FVector BoxSize = FVector(5.f, 5.f, 5.f);
+
+	UPROPERTY(EditAnywhere, Category = Box)
+	bool BoxDebug = false;
 public:
 	FORCEINLINE UBoxComponent* GetBox() const { return Box; }
 	void WeaponSetCollision(ECollisionEnabled::Type CollisionEnabled);

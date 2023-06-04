@@ -61,11 +61,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Input)
 	class UInputAction* AttackAction;
 
+	/** 회피 입력 액션 */
+	UPROPERTY(EditAnywhere, Category = Input)
+	class UInputAction* DodgeAction;
+
 
 	void Move(const FInputActionValue& Value); //캐릭터 움직이
 	void Look(const FInputActionValue& Value); //캐릭터 마우스로 보기
 	void EKeyPress(); // E키를 누르면
 	void Attack(); // 왼쪽마우스를 누르면
+	void Dodge(); //shift키 누르면
 
 	virtual void PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section) override;
 	
@@ -75,11 +80,17 @@ protected:
 	virtual void AttackEnd() override;
 
 	UFUNCTION(BlueprintCallable)
+	void DodgeEnd();
+
+	UFUNCTION(BlueprintCallable)
 	void HitReactEnd();
 
 private:
 	UPROPERTY()
 	class UMainCharacterOverlay* MyOverlay;
+
+	UPROPERTY(EditAnywhere, Category=  Montage)
+	class UAnimMontage* DodgeMontage;
 public:
 	//void SetItme(AItem* Item) { MyItem = Item; }
 	FORCEINLINE ECharacterState GetCharacterState() const{

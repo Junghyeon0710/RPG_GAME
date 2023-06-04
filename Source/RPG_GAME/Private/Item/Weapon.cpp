@@ -72,12 +72,12 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		this,
 		StartLoctaion,
 		EndLocation,
-		FVector(5.f, 5.f, 5.f),
+		BoxSize,
 		Start->GetComponentRotation(),
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,
 		ActorsToIgnore, //무시할 액터
-		EDrawDebugTrace::None,
+		BoxDebug ? EDrawDebugTrace::ForDuration:EDrawDebugTrace::None,
 		BoxHit,
 		true //이 클래스를 무시할건지
 	);
