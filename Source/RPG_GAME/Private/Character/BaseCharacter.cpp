@@ -13,7 +13,7 @@ ABaseCharacter::ABaseCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 
 	Attributes = CreateDefaultSubobject<UAttribtueComponent>(TEXT("Attribute"));
-
+	
 }
 
 void ABaseCharacter::DirectionalHitReact(const FVector& ImpactPoint, UAnimMontage* Montage)
