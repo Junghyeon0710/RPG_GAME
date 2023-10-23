@@ -51,50 +51,23 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-	Tags.Add(FName("EngagebleTarget"));
-
-	APlayerController* PlayerController =Cast<APlayerController>(GetController());
-	if (PlayerController)
-	{
-		AMyHUD* MyHUD = Cast<AMyHUD>(PlayerController->GetHUD());
-		if (MyHUD)
-		{
-			MyOverlay = MyHUD->GetMyOverlay();
-			if (MyOverlay && Attributes)
-			{
-				MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-				MyOverlay->SetSoul(0);
-				MyOverlay->SetGold(0);
-			}
-		}		
-	}
-
+	AddDefaultMappingContext();
+	AddEngageableTargetTag();
+	InitializeHUD();
+	InitializeMyOverlay();
 }
 
 void AMyCharacter::Die()
 {
 	Super::Die();
-	CharacterState = ECharacterState::ECS_Dead;
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	CharacterDeadState();
+	DisableMesh();
 }
-
 
 void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (Attributes && MyOverlay)
-	{
-		Attributes->RegenStamina(DeltaTime);
-		MyOverlay->SetStaminaProgressBarPercent(Attributes->GetStaminaPercent());
-	}
-		
+	UpdateStamina(DeltaTime);
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -106,10 +79,9 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AMyCharacter::Jump);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyCharacter::Look);
-		EnhancedInputComponent->BindAction(EKeyPressAction, ETriggerEvent::Triggered, this, &AMyCharacter::EKeyPress);
+		EnhancedInputComponent->BindAction(EKeyPressAction, ETriggerEvent::Started, this, &AMyCharacter::EKeyPress);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AMyCharacter::Attack);
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &AMyCharacter::Dodge);
-
 	}
 }
 
@@ -124,23 +96,38 @@ void AMyCharacter::Jump()
 float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Attributes->ReceiveDamage(DamageAmount);
-	if (MyOverlay && Attributes)
-	{
-		MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
-	}
+	UpdateHealthBar();
 	return DamageAmount;
 }
 
 void AMyCharacter::GetHit(const FVector& ImpactPoint, AActor* Hitter)
 {
 	Super::GetHit(ImpactPoint, Hitter);
-	if (EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
+	DisableWeapon();
+	HandleHitReaction();
+}
+
+void AMyCharacter::HandleHitReaction()
+{
 	if (Attributes && Attributes->GetHealthPercent() > 0.f)
 	{
 		CharacterAnimaionState = ECharacterAnimationState::EAS_HitReaction;
 	}
-	
-	
+}
+
+void AMyCharacter::DisableWeapon()
+{
+	if (EquippedWeapon) EquippedWeapon->WeaponSetCollision(ECollisionEnabled::NoCollision);
+}
+
+void AMyCharacter::DisableMesh()
+{
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AMyCharacter::CharacterDeadState()
+{
+	CharacterState = ECharacterState::ECS_Dead;
 }
 
 void AMyCharacter::SetItem(AItem* Item)
@@ -165,8 +152,6 @@ void AMyCharacter::AddGold(Atreasure* Gold)
 		MyOverlay->SetGold(Attributes->GetGold());
 	}
 }
-
-
 
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
@@ -207,7 +192,6 @@ void AMyCharacter::EKeyPress()
 		}
 		MyWeapon->ItemEquip(GetMesh(),FName("RightHandSocket"), this, this);
 		CharacterState = ECharacterState::ECS_EquipOneHand;
-
 		EquippedWeapon = MyWeapon;
 		MyWeapon = nullptr;
 	}
@@ -235,8 +219,6 @@ void AMyCharacter::Dodge()
 			MyOverlay->SetStaminaProgressBarPercent(Attributes->GetStaminaPercent());
 		}
 	}
-	
-	
 }
 
 void AMyCharacter::PlayAttackMontage(UAnimMontage* Montage , TArray<FName> Section)
@@ -259,3 +241,58 @@ void AMyCharacter::HitReactEnd()
 	CharacterAnimaionState = ECharacterAnimationState::EAS_None;
 }
 
+void AMyCharacter::AddDefaultMappingContext()
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+}
+
+void AMyCharacter::AddEngageableTargetTag()
+{
+	Tags.Add(EngageableTargetTag);
+}
+
+void AMyCharacter::InitializeHUD()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController)
+	{
+		AMyHUD* MyHUD = Cast<AMyHUD>(PlayerController->GetHUD());
+		if (MyHUD)
+		{
+			MyOverlay = MyHUD->GetMyOverlay();
+		}
+	}
+}
+
+void AMyCharacter::InitializeMyOverlay()
+{
+	if (MyOverlay && Attributes)
+	{
+		MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+		MyOverlay->SetSoul(0);
+		MyOverlay->SetGold(0);
+	}
+}
+
+void AMyCharacter::UpdateStamina(float DeltaTime)
+{
+	if (Attributes && MyOverlay)
+	{
+		Attributes->RegenStamina(DeltaTime);
+		MyOverlay->SetStaminaProgressBarPercent(Attributes->GetStaminaPercent());
+	}
+}
+
+void AMyCharacter::UpdateHealthBar()
+{
+	if (MyOverlay && Attributes)
+	{
+		MyOverlay->SetHealthBarPercent(Attributes->GetHealthPercent());
+	}
+}

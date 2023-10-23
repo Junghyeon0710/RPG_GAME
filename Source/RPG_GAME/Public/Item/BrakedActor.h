@@ -23,13 +23,14 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<class Atreasure>> TreasureClass;
+
 	bool bBarekd = false;
 
 	UPROPERTY(EditAnywhere)
 	class USoundBase* HitSound;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter)override;
+	void PlayHitSound(const FVector& ImpactPoint);
+	void SpawnTreasure();
 };

@@ -13,14 +13,7 @@ class RPG_GAME_API UAttribtueComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UAttribtueComponent();
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
 
 private:
 	
@@ -51,12 +44,12 @@ private:
 public:
 	void ReceiveDamage(float Damage);
 	void UseStamina(float StaminaCost);
-	float GetHealthPercent();
-	float GetStaminaPercent();
 	bool IsAlive();
 	void AddSouls(int32 NumberofSouls);
 	void AddGold(int32 NumberofGold);
 	void RegenStamina(float DeltaTime);
+	float GetHealthPercent();
+	float GetStaminaPercent();
 	FORCEINLINE int32 GetGold() const { return Gold; }
 	FORCEINLINE int32 GetSoul() const { return Soul; }
 	FORCEINLINE float GetDodgeCost() const { return DodgeCost; }

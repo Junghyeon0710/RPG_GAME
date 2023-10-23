@@ -17,24 +17,44 @@ public:
 	AEnemy();
 
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
-
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void PlayAttackMontage(UAnimMontage* Montage, TArray<FName> Section) override;
-	void Attack();
-	bool InTargetRange(AActor* Target, double Radius);
-	void MoveToTaget(AActor* Target);
-	AActor* ChoosePatrolTarget();
-	void CheckCombatTarget();
-	void CheckPatrolTarget();
 	virtual void AttackEnd() override;
 	virtual void Die() override;
+	void DisableCapsule();
+	void SpawnSoul();
+	void UpdateEnemyBehavior();
+	void Attack();
+	void MoveToTaget(AActor* Target);
+	void CheckCombatTarget();
+	void ChaseTarget();
+	void StartPatrolling();
+	void CheckPatrolTarget();
+	void HideHealthBarWidget();
+	void SetupAIController();
+	void SpawnAndEquipDefaultWeapon();
+	void AddEnemyTag();
+	void ClearAttackTimer();
+	bool IsOutsideCombatRadius();
+	bool IsEngaged();
+	bool IsChasing();
+	bool CanAttack();
+	bool IsInsideAttackRadius();
+	bool IsDead();
+	bool IsAttacking();
+	bool InTargetRange(AActor* Target, double Radius);
+	AActor* ChoosePatrolTarget();
+
+	UFUNCTION()
+	void PawnSeen(APawn* SeenPawn);
+
+	void ClearPatrolTimer();
 
 	/**combat */
-
 	void StartAttackTimer();
 
 	FTimerHandle AttackTimer;
@@ -45,21 +65,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float AttackMax = 1.f;
 
-	UFUNCTION()
-	void PawnSeen(APawn* SeenPawn);
-
-
 	UPROPERTY(BlueprintReadOnly)
 	EEnemyState EnemyState = EEnemyState::EES_Patrolling;
 
-
 private:
-
 
 	UPROPERTY(VisibleAnywhere)
 	class UHealthBarComponent* HealthBarWidget;
-
-
 
 	UPROPERTY(EditAnywhere, Category = "반경")
 	float CombatRadius = 500.f;
@@ -69,6 +81,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "반경")
 	float AcceptanceRadius = 45.f;
+
+	UPROPERTY(EditAnywhere, Category = "이름")
+	FName AITag = "Enemy";
 
 	/** Navigation*/
 
@@ -92,11 +107,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Ai Navigation")
 	float WaitMax = 10.f;
 
+	UPROPERTY(EditAnywhere, Category = "Ai Navigation")
+	float DeathLifeSpan = 5.f;
+
 	//Component
 	UPROPERTY(VisibleAnywhere)
 	class UPawnSensingComponent* PawnSensing;
-
-
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AWeapon> WeaponClass;

@@ -18,20 +18,22 @@ class RPG_GAME_API ABaseCharacter : public ACharacter , public IMyInterface
 public:
 	ABaseCharacter();
 	void DirectionalHitReact(const FVector& ImpactPoint, UAnimMontage* Montage);
+
 protected:
 
-	virtual void BeginPlay() override;
 	virtual void GetHit(const FVector& ImpactPoint, AActor* Hitter) override;
 	virtual void PlayAttackMontage(UAnimMontage* Montage,  TArray<FName> Section); //공격 몽타주
 	virtual void PlayMontage(const FName Section, UAnimMontage* Montage);
 	virtual void Die();
-	void StopAttackMontage();
-	UFUNCTION(BlueprintCallable)
-	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
-	
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackEnd();
 
+	FName DeathMontageSection();
+
+	UFUNCTION(BlueprintCallable)
+	void SetCollision(ECollisionEnabled::Type CollisionEnabled);
+	void StopAttackMontage();
+	
 	UFUNCTION(BlueprintCallable)
 	FVector GetTranslationWarpTarget();
 
@@ -64,9 +66,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	class UAttribtueComponent* Attributes;
-
-	FName DeathMontageSection();
-
 
 	UPROPERTY(BlueprintReadOnly)
 	EDeathPose DeathPose = EDeathPose::EDP_Alive;

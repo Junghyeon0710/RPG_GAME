@@ -7,6 +7,11 @@ void AMyHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CreateMainCharacterOverlay();
+}
+
+void AMyHUD::CreateMainCharacterOverlay()
+{
 	UWorld* World = GetWorld();
 	if (World)
 	{
@@ -17,6 +22,4 @@ void AMyHUD::BeginPlay()
 			Overlay->AddToViewport();
 		}
 	}
-	
-	
 }

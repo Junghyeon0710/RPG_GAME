@@ -16,7 +16,8 @@ class RPG_GAME_API AMyHUD : public AHUD
 protected:
 	virtual void BeginPlay() override;
 
-	
+	void CreateMainCharacterOverlay();
+
 private:
 
 	UPROPERTY(EditDefaultsOnly,Category = Class)

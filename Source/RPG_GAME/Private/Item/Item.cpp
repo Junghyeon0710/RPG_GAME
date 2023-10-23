@@ -11,11 +11,9 @@ AItem::AItem()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
 
-	
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(RootComponent);
 
@@ -45,14 +43,12 @@ void AItem::BeginPlay()
 
 void AItem::SphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	
 	IPickupInterface* PickupInterface = Cast<IPickupInterface>(OtherActor);
 
 	if (PickupInterface)
 	{
 		PickupInterface->SetItem(this);
 	}
-	
 }
 
 void AItem::SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

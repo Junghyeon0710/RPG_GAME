@@ -15,10 +15,8 @@ class RPG_GAME_API UHealthBarComponent : public UWidgetComponent
 	GENERATED_BODY()
 public:
 	void SetHealthPercent(float Percent);
-	float bbbbb;
+
 private:
 	UPROPERTY()
 	class UHealthBar* HealthBarWidget;
-
-	float aaaaaa;
 };

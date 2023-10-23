@@ -25,12 +25,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere)
-	class USphereComponent* Sphere;
-
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* Mesh;
-
 	//스페어에 닳을시
 	UFUNCTION()
 	virtual void SphereBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -39,14 +33,21 @@ protected:
 	UFUNCTION()
 	virtual void SphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	EItemState ItemState = EItemState::EIS_Hovering;
+	UPROPERTY(VisibleAnywhere)
+	class USphereComponent* Sphere;
+
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* Mesh;
 
 	UPROPERTY(VisibleAnywhere)
 	class UNiagaraComponent* ItemEffect;
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* PickupEffec;
+
+	EItemState ItemState = EItemState::EIS_Hovering;
 private:
+	float MySin(); // 사인구하기
 
 	UPROPERTY(EditAnywhere,Category = "사인")
 	float TimeConstant = 5.f; // 
@@ -56,7 +57,5 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "사인")
 	float RunningTime; //시간
-
-	float MySin(); // 사인구하기
 
 };
