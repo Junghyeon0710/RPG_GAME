@@ -15,10 +15,8 @@ class RPG_GAME_API AWeapon : public AItem
 	GENERATED_BODY()
 public:
 	AWeapon();
-	virtual void Tick(float DeltaTime) override;
-
 	void ItemEquip(USceneComponent* Parent,const FName Name,AActor* NewOwner , APawn* NewInstigator);
-
+	UPROPERTY()
 	TArray<AActor*> IgnoreActor;
 protected:
 	virtual void BeginPlay() override;
@@ -39,6 +37,10 @@ protected:
 	void CreateFields(const FVector& FieldLocation);
  
 private:
+	bool IsEnemy(AActor* Actor) const;
+	void TraceWithIgnoreActors(FHitResult& HitResult);
+	void ApplyDamageToActor(AActor* AcHitActortor, float DamageAmount);
+	void ApplyHitAndCreateFields(AActor* HitActor, const FVector& ImpactPoint);
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;

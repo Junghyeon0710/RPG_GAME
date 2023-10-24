@@ -7,7 +7,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include <Kismet/GameplayStatics.h>
 #include "../Public/Interface/MyInterface.h"
-#include <Debug/DebugDrawComponent.h>
 
 AWeapon::AWeapon()
 {
@@ -23,13 +22,6 @@ AWeapon::AWeapon()
 
 	End = CreateDefaultSubobject<USceneComponent>(TEXT("End"));
 	End->SetupAttachment(GetRootComponent());
-}
-
-void AWeapon::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	
 }
 
 void AWeapon::BeginPlay()
@@ -50,14 +42,31 @@ void AWeapon::ItemEquip(USceneComponent* Parent, const FName Name,AActor* NewOwn
 
 void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (GetOwner()->ActorHasTag(TEXT("Enemy")) && OtherActor->ActorHasTag(TEXT("Enemy")))
+	if (IsEnemy(OtherActor))
 	{
 		return;//무기 소유한 사람도 적이고 상대도 적이라면 
 	}
+	FHitResult BoxHit;
 
+	TraceWithIgnoreActors(BoxHit);
+
+	if (BoxHit.GetActor())
+	{
+		ApplyDamageToActor(BoxHit.GetActor(), Damage);
+		ApplyHitAndCreateFields(BoxHit.GetActor(), BoxHit.ImpactPoint);	
+	}
+}
+
+bool AWeapon::IsEnemy(AActor* Actor) const
+{
+	return GetOwner()->ActorHasTag(TEXT("Enemy")) && Actor->ActorHasTag(TEXT("Enemy"));
+}
+
+void AWeapon::TraceWithIgnoreActors(FHitResult& HitResult)
+{
 	const FVector StartLoctaion = Start->GetComponentLocation();
 	const FVector EndLocation = End->GetComponentLocation();
-	
+
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
 	ActorsToIgnore.Add(GetOwner());
@@ -67,7 +76,6 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		ActorsToIgnore.AddUnique(Actor);
 	}
 
-	FHitResult BoxHit;
 	UKismetSystemLibrary::BoxTraceSingle(
 		this,
 		StartLoctaion,
@@ -77,38 +85,38 @@ void AWeapon::BoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 		ETraceTypeQuery::TraceTypeQuery1,
 		false,
 		ActorsToIgnore, //무시할 액터
-		BoxDebug ? EDrawDebugTrace::ForDuration:EDrawDebugTrace::None,
-		BoxHit,
+		BoxDebug ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None,
+		HitResult,
 		true //이 클래스를 무시할건지
 	);
-	IgnoreActor.AddUnique(BoxHit.GetActor()); //맞은 배우를 배열에 저장해줌
+
+	IgnoreActor.AddUnique(HitResult.GetActor()); //맞은 배우를 배열에 저장해줌
 	// 캐릭터에 클래스에 가서 배열을 다시 비워줘야 계속 타격 가능
-	DrawDebugSphere(GetWorld(), BoxHit.ImpactPoint, 12.f, 10, FColor::White, false, 3.f);
+}
 
-	if (BoxHit.GetActor())
+void AWeapon::ApplyDamageToActor(AActor* HitActor, float DamageAmount)
+{
+	if (IsEnemy(HitActor))
 	{
-		if (GetOwner()->ActorHasTag(TEXT("Enemy")) && BoxHit.GetActor()->ActorHasTag(TEXT("Enemy")))
-		{
-			return;//무기 소유한 사람도 적이고 상대도 적이라면 
-		}
-		UGameplayStatics::ApplyDamage(
-			BoxHit.GetActor(),
-			Damage,
-			GetInstigator()->GetController(),
-			this,
-			UDamageType::StaticClass()
-		);
-
-		IMyInterface* HitInterface = Cast<IMyInterface>(BoxHit.GetActor());
-		if (HitInterface)
-		{
-			HitInterface->GetHit(BoxHit.ImpactPoint,GetOwner());
-		}
-		
-		CreateFields(BoxHit.ImpactPoint); //필드생성 액터 부시기
-
-		
+		return;//무기 소유한 사람도 적이고 상대도 적이라면 
 	}
+	UGameplayStatics::ApplyDamage(
+		HitActor,
+		DamageAmount,
+		GetInstigator()->GetController(),
+		this,
+		UDamageType::StaticClass()
+	);
+}
+
+void AWeapon::ApplyHitAndCreateFields(AActor* HitActor, const FVector& ImpactPoint)
+{
+	IMyInterface* HitInterface = Cast<IMyInterface>(HitActor);
+	if (HitInterface)
+	{
+		HitInterface->GetHit(ImpactPoint, GetOwner());
+	}
+	CreateFields(ImpactPoint); //필드생성 액터 부시기	
 
 }
 

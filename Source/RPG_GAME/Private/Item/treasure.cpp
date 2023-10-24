@@ -7,7 +7,7 @@
 Atreasure::Atreasure()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -27,13 +27,6 @@ void Atreasure::SphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
 		PickupInterface->AddGold(this);
 		Destroy();
 	}
-	
 }
 
-// Called every frame
-void Atreasure::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

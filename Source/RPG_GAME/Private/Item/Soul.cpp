@@ -10,12 +10,7 @@ void ASoul::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	const double LocationZ = GetActorLocation().Z;
-	if (LocationZ > DesiredZ)
-	{
-		const FVector DeltaLocation = FVector(0.f, 0.f, DriftRate * DeltaTime);
-		AddActorWorldOffset(DeltaLocation);
-	}
+	MoveSoul(DeltaTime);
 }
 
 void ASoul::BeginPlay()
@@ -47,6 +42,21 @@ void ASoul::BeginPlay()
 
 void ASoul::SphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	HandleItemPickup(OtherActor);
+}
+
+void ASoul::MoveSoul(float DeltaTime)
+{
+	const double LocationZ = GetActorLocation().Z;
+	if (LocationZ > DesiredZ)
+	{
+		const FVector DeltaLocation = FVector(0.f, 0.f, DriftRate * DeltaTime);
+		AddActorWorldOffset(DeltaLocation);
+	}
+}
+
+void ASoul::HandleItemPickup(AActor* OtherActor)
+{
 	IPickupInterface* PickupInterface = Cast<IPickupInterface>(OtherActor);
 
 	if (PickupInterface)
@@ -62,5 +72,4 @@ void ASoul::SphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Othe
 		}
 		Destroy();
 	}
-	}
-	
+}

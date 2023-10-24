@@ -24,6 +24,11 @@ AItem::AItem()
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UpdateItemPosition(DeltaTime);
+}
+
+void AItem::UpdateItemPosition(float DeltaTime)
+{
 	if (ItemState != EItemState::EIS_Equipped)
 	{
 		RunningTime += DeltaTime;
