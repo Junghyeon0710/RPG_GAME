@@ -22,6 +22,8 @@ protected:
 	virtual void SphereBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)override;
 	void HandleItemPickup(AActor* OtherActor);
 private:
+	void CalculateDesiredZOffset();
+	
 	// 아이템의 현재 영혼 수입니다.
 	UPROPERTY(EditAnywhere)
 	int32 Soul;

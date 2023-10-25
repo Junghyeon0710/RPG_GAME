@@ -17,27 +17,7 @@ void ASoul::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const FVector Start = GetActorLocation();
-	const FVector End = Start - FVector(0.f, 0.f, 2000.f);
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery1);
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(GetOwner());
-	FHitResult HitResult;
-
-	UKismetSystemLibrary::LineTraceSingleForObjects(
-		this,
-		Start,
-		End,
-		ObjectTypes,
-		false,
-		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
-		HitResult,
-		true);
-
-		DesiredZ = HitResult.ImpactPoint.Z+50.f;
+	CalculateDesiredZOffset();
 }
 
 void ASoul::SphereBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -72,4 +52,29 @@ void ASoul::HandleItemPickup(AActor* OtherActor)
 		}
 		Destroy();
 	}
+}
+
+void ASoul::CalculateDesiredZOffset()
+{
+	const FVector Start = GetActorLocation();
+	const FVector End = Start - FVector(0.f, 0.f, 2000.f);
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery1);
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(GetOwner());
+	FHitResult HitResult;
+
+	UKismetSystemLibrary::LineTraceSingleForObjects(
+		this,
+		Start,
+		End,
+		ObjectTypes,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		HitResult,
+		true);
+
+	DesiredZ = HitResult.ImpactPoint.Z + 50.f;
 }
